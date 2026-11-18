@@ -166,7 +166,6 @@ async function init(){
  drawDates();updateAdminView();
  const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();await loadSlots()}
 }
-db.auth.onAuthStateChange((_event,session)=>{adminSession=session;updateAdminView()});
 init();
 })();
 </script>
