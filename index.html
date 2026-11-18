@@ -84,7 +84,7 @@ const SUPABASE_KEY="sb_publishable_jNRVDDZX73NuPZt190O9vw_q8e0Lt37";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const TIMES=["10:00 AM","10:45 AM","11:30 AM","12:30 PM","1:15 PM","2:00 PM","2:45 PM","3:30 PM","4:30 PM","5:15 PM","6:00 PM"];
 let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],allClients=[],cachedBookings=[];
-let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false;
+let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false,googlePendingSave=null;
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
 const dateKey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -175,11 +175,13 @@ async function saveClientToGoogle(client,button,status){
     client_id:"611354308915-jg11vskaos1994l9ce9jaionuvndpf88.apps.googleusercontent.com",
     scope:"https://www.googleapis.com/auth/contacts",
     callback:async tokenResponse=>{
-     if(tokenResponse.error||!tokenResponse.access_token){status.textContent="Google no autorizó el acceso. "+(tokenResponse.error_description||tokenResponse.error||"");button.disabled=false;button.textContent="Guardar contacto";return}
-     googleAccessToken=tokenResponse.access_token;googleTokenExpiresAt=Date.now()+(Number(tokenResponse.expires_in)||3600)*1000;googleConsentRequested=true;await handleToken(googleAccessToken);
+     const pending=googlePendingSave;googlePendingSave=null;if(!pending)return;
+     if(tokenResponse.error||!tokenResponse.access_token){pending.status.textContent="Google no autorizó el acceso. "+(tokenResponse.error_description||tokenResponse.error||"");pending.button.disabled=false;pending.button.textContent="Guardar contacto";return}
+     googleAccessToken=tokenResponse.access_token;googleTokenExpiresAt=Date.now()+(Number(tokenResponse.expires_in)||3600)*1000;googleConsentRequested=true;await pending.handleToken(googleAccessToken);
     }
    });
   }
+  googlePendingSave={handleToken,button,status};
   googleTokenClient.requestAccessToken({prompt:googleConsentRequested?"":"consent"});
  }catch(error){status.textContent="Error al iniciar Google: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}
 }
