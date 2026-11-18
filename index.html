@@ -66,8 +66,8 @@
   </div>
   <h3>Reservas registradas</h3><div id="booking-list"></div>
   <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
-  <div class="section-head"><h3>Historial de clientes</h3><button class="btn" id="export-contacts" type="button">Exportar contactos CSV</button></div>
-  <p id="export-status" class="note" aria-live="polite"></p>
+  <div class="section-head"><h3>Historial de clientes</h3></div>
+  <p class="note">Puedes preparar individualmente el contacto de cada cliente y guardarlo en tu cuenta de Google.</p>
   <input id="client-search" class="client-search" type="search" placeholder="Buscar por nombre o teléfono">
   <div id="client-list"></div>
   <div id="client-history" class="hidden" style="margin-top:18px;background:#fff;border-radius:12px;padding:16px"></div>
@@ -148,6 +148,21 @@ async function renderAdmin(){
  drawClients();
 }
 function allBookingsForClient(id){return cachedBookings.filter(b=>b.customer_id===id)}
+function downloadClientContact(client){
+ const fullName=String(client.customer_name||"").trim();
+ const parts=fullName.split(/\s+/);
+ const first=parts.shift()||"";
+ const last=parts.join(" ");
+ const escapeVCard=value=>String(value||"").replace(/\\/g,"\\\\").replace(/\r?\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");
+ const vcard=["BEGIN:VCARD","VERSION:3.0","N:"+escapeVCard(last)+";"+escapeVCard(first)+";;;","FN:"+escapeVCard(fullName),"TEL;TYPE=CELL:"+escapeVCard(client.customer_phone),"END:VCARD"].join("\r\n");
+ const blob=new Blob(["\uFEFF"+vcard+"\r\n"],{type:"text/vcard;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement("a");
+ const safeName=(fullName||"cliente").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_-]+/g,"-").replace(/^-|-$/g,"");
+ link.href=url;link.download="BARNAGUER-"+(safeName||"cliente")+".vcf";
+ document.body.appendChild(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
 function drawClients(){
  const q=($("client-search").value||"").trim().toLowerCase(),wrap=$("client-list");
  const visible=allClients.filter(c=>(c.customer_name+" "+c.customer_phone).toLowerCase().includes(q));
@@ -159,7 +174,8 @@ function drawClients(){
   card.innerHTML="<strong>"+esc(c.customer_name)+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
   const actions=document.createElement("div");actions.className="client-actions";
   const btn=document.createElement("button");btn.type="button";btn.className="btn";btn.textContent="Ver historial";btn.onclick=()=>showClientHistory(c);
-  actions.appendChild(btn);card.appendChild(actions);wrap.appendChild(card);
+  const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn";contactBtn.textContent="Preparar contacto";contactBtn.onclick=()=>downloadClientContact(c);
+  actions.append(btn,contactBtn);card.appendChild(actions);wrap.appendChild(card);
  });
 }
 function showClientHistory(c){
@@ -206,29 +222,7 @@ $("admin-login-form").addEventListener("submit",async e=>{
 });
 $("admin-logout").onclick=async()=>{await db.auth.signOut();adminSession=null;updateAdminView()};
 $("client-search").addEventListener("input",drawClients);
-$("export-contacts").addEventListener("click",()=>{
- if(!adminSession){$("export-status").textContent="Inicia sesión para exportar los contactos.";return}
- if(!allClients.length){$("export-status").textContent="No hay clientes para exportar.";return}
- const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
- const rows=[["First Name","Last Name","Phone 1 - Label","Phone 1 - Value"]];
- allClients.forEach(client=>{
-  const parts=String(client.customer_name||"").trim().split(/\s+/);
-  const first=parts.shift()||"";
-  const last=parts.join(" ");
-  rows.push([first,last,"Mobile",String(client.customer_phone||"")]);
- });
- const csv="\uFEFF"+rows.map(row=>row.map(quote).join(",")).join("\r\n");
- const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
- const url=URL.createObjectURL(blob);
- const link=document.createElement("a");
- link.href=url;
- link.download="BARNAGUER-contactos-"+dateKey(new Date())+".csv";
- document.body.appendChild(link);
- link.click();
- link.remove();
- setTimeout(()=>URL.revokeObjectURL(url),1000);
- $("export-status").textContent="Archivo preparado con "+allClients.length+" contactos. Impórtalo en Google Contacts.";
-});
+
 $("tab-book").onclick=()=>show("book");$("tab-admin").onclick=()=>show("admin");
 $("new-booking").onclick=()=>{$("admin-form-wrap").classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{let d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("")};
 $("close-admin-form").onclick=()=> $("admin-form-wrap").classList.add("hidden");
