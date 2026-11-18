@@ -82,7 +82,7 @@ const pad=n=>String(n).padStart(2,"0");
 const dateKey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const fromKey=s=>{const p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2])};
 const labelDate=d=>d.toLocaleDateString("es-US",{weekday:"short",day:"2-digit",month:"short"}).replace(".","").toUpperCase();
-const toMinutes=t=>{const m=t.match(/(\\d+):(\\d+)\\s(AM|PM)/);let h=Number(m[1])%12;if(m[3]==="PM")h+=12;return h*60+Number(m[2])};
+const toMinutes=t=>{const m=t.match(/(\d+):(\d+)\s(AM|PM)/);let h=Number(m[1])%12;if(m[3]==="PM")h+=12;return h*60+Number(m[2])};
 const today=new Date();today.setHours(0,0,0,0);
 function dates(){return [0,1,2].map(i=>{const d=new Date(today);d.setDate(today.getDate()+i);return d})}
 function i18nDay(d){if(dateKey(d)===dateKey(today))return "HOY";const x=new Date(today);x.setDate(today.getDate()+1);return dateKey(d)===dateKey(x)?"MAÑANA":"PASADO MAÑANA"}
