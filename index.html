@@ -20,14 +20,14 @@
  <div class="brand"><div class="avatar" aria-label="Espacio provisional para el logo">B</div><div><h1>BARNAGUER</h1><p>Tu Barbería en Santa Fé</p></div></div>
  <nav class="nav" aria-label="Navegación"><button id="tab-book" class="active" type="button">Reservar turno</button><button id="tab-admin" type="button">Administración</button></nav>
 </header>
-<section class="hero"><div><h2 id="hero-title">Reserva tu próximo turno</h2><p id="hero-subtitle">Elegí el día y el horario que mejor te convenga.</p></div></section>
+<section class="hero"><div><h2 id="hero-title">Reserva tu próximo turno</h2><p id="hero-subtitle">Elige el día y el horario que mejor te convenga.</p></div></section>
 <main id="booking-view">
  <div class="layout">
   <section class="panel">
-   <h3>1. Seleccioná el día</h3><div id="dates" class="date-list"></div>
-   <p class="note">Podés reservar para hoy, mañana o pasado mañana. Los domingos no hay atención.</p>
-   <h3 style="margin-top:22px">2. Elegí un horario</h3><div id="times" class="time-grid"></div>
-   <div id="availability-note" class="note" style="margin-top:12px">Seleccioná una fecha para consultar los horarios.</div>
+   <h3>1. Selecciona el día</h3><div id="dates" class="date-list"></div>
+   <p class="note">Puedes reservar para hoy, mañana o pasado mañana. Los domingos no hay atención.</p>
+   <h3 style="margin-top:22px">2. Elige un horario</h3><div id="times" class="time-grid"></div>
+   <div id="availability-note" class="note" style="margin-top:12px">Selecciona una fecha para consultar los horarios.</div>
   </section>
   <section class="panel">
    <h3>3. Tus datos</h3>
@@ -83,7 +83,7 @@ function drawDates(){
 function i18nDay(d){if(dateKey(d)===dateKey(today))return "HOY";const x=new Date(today);x.setDate(today.getDate()+1);return dateKey(d)===dateKey(x)?"MAÑANA":"PASADO MAÑANA"}
 function drawTimes(){
  const wrap=$("times");wrap.innerHTML="";
- if(!selectedDate){$("availability-note").textContent="Seleccioná una fecha para consultar los horarios.";return}
+ if(!selectedDate){$("availability-note").textContent="Selecciona una fecha para consultar los horarios.";return}
  const day=fromKey(selectedDate),now=new Date(),bookings=read().filter(x=>x.date===selectedDate);
  let free=0;
  TIMES.forEach(t=>{const taken=bookings.some(x=>x.time===t);const tooSoon=selectedDate===dateKey(today)&&toMinutes(t)<=(now.getHours()*60+now.getMinutes()+60);const b=document.createElement("button");b.type="button";b.className="time-option"+(selectedTime===t?" selected":"");b.textContent=t;b.disabled=taken||tooSoon||day.getDay()===0;if(!b.disabled)free++;b.title=taken?"Horario reservado":tooSoon?"Se requiere al menos una hora de anticipación":"";b.onclick=()=>{selectedTime=t;drawTimes()};wrap.appendChild(b)});
@@ -98,9 +98,9 @@ function renderAdmin(){
  data.forEach(x=>{const item=document.createElement("div");item.className="booking";const info=document.createElement("div");info.innerHTML="<strong>"+esc(x.name)+"</strong><small>"+esc(x.phone)+" · "+labelDate(fromKey(x.date))+" · "+esc(x.time)+"</small>";const del=document.createElement("button");del.className="btn danger";del.type="button";del.textContent="Cancelar";del.onclick=()=>{if(confirm("¿Cancelar el turno de "+x.name+"?")){save(read().filter(y=>y.id!==x.id));renderAdmin();drawTimes()}};item.append(info,del);list.appendChild(item)});
 }
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-$("booking-form").addEventListener("submit",e=>{e.preventDefault();if(!selectedDate||!selectedTime){$("booking-status").innerHTML='<div class="status">Seleccioná un día y un horario antes de confirmar.</div>';return}const data=read();if(data.some(x=>x.date===selectedDate&&x.time===selectedTime)){drawTimes();$("booking-status").innerHTML='<div class="status">Ese horario acaba de ser reservado. Elegí otro.</div>';return}data.push({id:String(Date.now()),name:$("client-name").value.trim(),phone:$("client-phone").value.trim(),date:selectedDate,time:selectedTime});save(data);$("booking-status").innerHTML='<div class="status">¡Tu turno quedó registrado! Te esperamos en BARNAGUER.</div>';$("booking-form").reset();selectedTime="";drawTimes();renderAdmin()});
+$("booking-form").addEventListener("submit",e=>{e.preventDefault();if(!selectedDate||!selectedTime){$("booking-status").innerHTML='<div class="status">Selecciona un día y un horario antes de confirmar.</div>';return}const data=read();if(data.some(x=>x.date===selectedDate&&x.time===selectedTime)){drawTimes();$("booking-status").innerHTML='<div class="status">Ese horario acaba de ser reservado. Elige otro.</div>';return}data.push({id:String(Date.now()),name:$("client-name").value.trim(),phone:$("client-phone").value.trim(),date:selectedDate,time:selectedTime});save(data);$("booking-status").innerHTML='<div class="status">¡Tu turno quedó registrado! Te esperamos en BARNAGUER.</div>';$("booking-form").reset();selectedTime="";drawTimes();renderAdmin()});
 $("tab-book").onclick=()=>show("book");$("tab-admin").onclick=()=>show("admin");
-function show(which){const admin=which==="admin";$("booking-view").classList.toggle("hidden",admin);$("admin-view").classList.toggle("hidden",!admin);$("tab-book").classList.toggle("active",!admin);$("tab-admin").classList.toggle("active",admin);$("hero-title").textContent=admin?"Administración de turnos":"Reserva tu próximo turno";$("hero-subtitle").textContent=admin?"Consultá, registrá y administrá las reservas.":"Elegí el día y el horario que mejor te convenga.";if(admin)renderAdmin()}
+function show(which){const admin=which==="admin";$("booking-view").classList.toggle("hidden",admin);$("admin-view").classList.toggle("hidden",!admin);$("tab-book").classList.toggle("active",!admin);$("tab-admin").classList.toggle("active",admin);$("hero-title").textContent=admin?"Administración de turnos":"Reserva tu próximo turno";$("hero-subtitle").textContent=admin?"Consulta, registrá y administrá las reservas.":"Elige el día y el horario que mejor te convenga.";if(admin)renderAdmin()}
 $("new-booking").onclick=()=>{$("admin-form-wrap").classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{let d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("")};
 $("close-admin-form").onclick=()=>$("admin-form-wrap").classList.add("hidden");
 $("admin-form").addEventListener("submit",e=>{e.preventDefault();const date=$("admin-date").value,time=$("admin-time").value;if(fromKey(date).getDay()===0){alert("Los domingos la barbería permanece cerrada.");return}const data=read();if(data.some(x=>x.date===date&&x.time===time)){alert("Ese horario ya está reservado.");return}data.push({id:String(Date.now()),name:$("admin-name").value.trim(),phone:$("admin-phone").value.trim(),date,time});save(data);$("admin-form").reset();$("admin-form-wrap").classList.add("hidden");renderAdmin();drawTimes()});
