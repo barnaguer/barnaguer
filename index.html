@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{--primary:#9C8162;--secondary:#605048;--accent:#8B5E2D;--ink:#47342E;--bg:#D2CCC2;--neutral:#E2E1DD;--white:#fff;--muted:#766c64;--line:#d5cec5;--shadow:0 12px 34px #47342e16}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto, sans-serif}button,input{font:inherit}button{cursor:pointer}.shell{max-width:1120px;margin:auto;padding:22px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.avatar{width:52px;height:52px;border-radius:12px;background:var(--secondary);display:grid;place-items:center;color:#fff;font-family:Poppins;font-weight:700;letter-spacing:1px}.brand h1{font:700 23px Poppins;margin:0;letter-spacing:2px}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}.nav{display:flex;gap:8px}.nav button,.btn{border:0;border-radius:9px;padding:12px 17px;background:var(--secondary);color:#fff;font-weight:600}.nav button.active,.btn.primary{background:var(--accent)}.hero{height:170px;border-radius:16px;background:linear-gradient(120deg,#47342e,#8b5e2d 70%,#9c8162);color:white;display:flex;align-items:end;padding:24px;margin-bottom:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}.hero:after{content:"B";position:absolute;right:34px;top:-60px;font:700 250px Poppins;color:#ffffff12}.hero h2{margin:0 0 5px;font:600 25px Poppins}.hero p{margin:0;color:#f0e9e1}.layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}.panel{background:var(--neutral);border-radius:16px;padding:22px;box-shadow:var(--shadow)}.panel h3{font:600 18px Poppins;margin:0 0 16px}.date-list,.time-grid{display:grid;gap:9px}.date-list{grid-template-columns:repeat(3,1fr)}.date-option,.time-option{border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);padding:13px 8px;text-align:center}.date-option strong{display:block;font-size:13px}.date-option span{font-size:12px;color:var(--muted)}.date-option.selected,.time-option.selected{border:2px solid var(--accent);background:#f4eee7}.date-option:disabled,.time-option:disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through}.time-grid{grid-template-columns:repeat(3,1fr)}.time-option{font-weight:600;padding:13px 4px}.field{display:grid;gap:6px;margin:14px 0}.field label{font-size:13px;font-weight:600}.field input{width:100%;border:1px solid var(--line);border-radius:9px;padding:13px;background:#fff;color:var(--ink)}.full{width:100%;margin-top:8px}.note{font-size:12px;color:var(--muted);line-height:1.5}.hidden{display:none!important}.status{margin-top:13px;padding:12px;border-radius:9px;background:#eee5d9;font-size:13px}.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border-radius:12px;padding:15px}.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{font:600 24px Poppins}.booking{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}.booking:last-child{border:0}.client-card{background:#fff;border-radius:11px;padding:13px;margin:9px 0}.client-card small{display:block;color:var(--muted);margin-top:4px}.client-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.client-search{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;margin:0 0 10px}.history-entry{padding:12px 0;border-bottom:1px solid var(--line)}.history-entry small{display:block;color:var(--muted);margin-top:4px}.tag-canceled{color:#8b3d32;font-weight:700}.booking small{display:block;color:var(--muted);margin-top:4px}.danger{background:#8b3d32}.empty{color:var(--muted);font-size:14px;padding:16px 0}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.section-head .btn{padding:9px 12px;font-size:12px}.admin-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}#admin-content>.section-head{margin-bottom:6px}footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 8px}
@@ -83,6 +84,7 @@ const SUPABASE_KEY="sb_publishable_jNRVDDZX73NuPZt190O9vw_q8e0Lt37";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const TIMES=["10:00 AM","10:45 AM","11:30 AM","12:30 PM","1:15 PM","2:00 PM","2:45 PM","3:30 PM","4:30 PM","5:15 PM","6:00 PM"];
 let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],allClients=[],cachedBookings=[];
+let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false;
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
 const dateKey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -148,20 +150,38 @@ async function renderAdmin(){
  drawClients();
 }
 function allBookingsForClient(id){return cachedBookings.filter(b=>b.customer_id===id)}
-function downloadClientContact(client){
- const fullName=String(client.customer_name||"").trim();
- const parts=fullName.split(/\s+/);
- const first=parts.shift()||"";
- const last=parts.join(" ");
- const escapeVCard=value=>String(value||"").replace(/\\/g,"\\\\").replace(/\r?\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");
- const vcard=["BEGIN:VCARD","VERSION:3.0","N:"+escapeVCard(last)+";"+escapeVCard(first)+";;;","FN:"+escapeVCard(fullName),"TEL;TYPE=CELL:"+escapeVCard(client.customer_phone),"END:VCARD"].join("\r\n");
- const blob=new Blob(["\uFEFF"+vcard+"\r\n"],{type:"text/vcard;charset=utf-8"});
- const url=URL.createObjectURL(blob);
- const link=document.createElement("a");
- const safeName=(fullName||"cliente").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9_-]+/g,"-").replace(/^-|-$/g,"");
- link.href=url;link.download="BARNAGUER-"+(safeName||"cliente")+".vcf";
- document.body.appendChild(link);link.click();link.remove();
- setTimeout(()=>URL.revokeObjectURL(url),1500);
+async function saveClientToGoogle(client,button,status){
+ if(!adminSession){status.textContent="Inicia sesión como administrador.";return}
+ if(!client.customer_name||!client.customer_phone){status.textContent="Falta el nombre o el teléfono del cliente.";return}
+ button.disabled=true;button.textContent="Conectando con Google...";
+ const createContact=async token=>{
+  const parts=String(client.customer_name).trim().split(/\\s+/);
+  const givenName=parts.shift()||"";
+  const familyName=parts.join(" ");
+  const response=await fetch("https://people.googleapis.com/v1/people:createContact?personFields=names,phoneNumbers",{
+   method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+   body:JSON.stringify({names:[{givenName,familyName}],phoneNumbers:[{value:String(client.customer_phone),type:"mobile"}]})
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error?.message||"Google no pudo guardar el contacto.");
+  status.textContent="Contacto guardado en Google Contacts.";button.textContent="Guardado en Google";button.disabled=true;
+ };
+ const handleToken=async token=>{try{await createContact(token)}catch(error){status.textContent="No se pudo guardar: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}};
+ if(googleAccessToken&&Date.now()<googleTokenExpiresAt-60000){await handleToken(googleAccessToken);return}
+ if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){status.textContent="Google todavía está cargando. Recarga la página e inténtalo de nuevo.";button.disabled=false;button.textContent="Guardar contacto";return}
+ try{
+  if(!googleTokenClient){
+   googleTokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:"611354308915-jg11vskaos1994l9ce9jaionuvndpf88.apps.googleusercontent.com",
+    scope:"https://www.googleapis.com/auth/contacts",
+    callback:async tokenResponse=>{
+     if(tokenResponse.error||!tokenResponse.access_token){status.textContent="Google no autorizó el acceso. "+(tokenResponse.error_description||tokenResponse.error||"");button.disabled=false;button.textContent="Guardar contacto";return}
+     googleAccessToken=tokenResponse.access_token;googleTokenExpiresAt=Date.now()+(Number(tokenResponse.expires_in)||3600)*1000;googleConsentRequested=true;await handleToken(googleAccessToken);
+    }
+   });
+  }
+  googleTokenClient.requestAccessToken({prompt:googleConsentRequested?"":"consent"});
+ }catch(error){status.textContent="Error al iniciar Google: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}
 }
 function drawClients(){
  const q=($("client-search").value||"").trim().toLowerCase(),wrap=$("client-list");
@@ -174,8 +194,10 @@ function drawClients(){
   card.innerHTML="<strong>"+esc(c.customer_name)+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
   const actions=document.createElement("div");actions.className="client-actions";
   const btn=document.createElement("button");btn.type="button";btn.className="btn";btn.textContent="Ver historial";btn.onclick=()=>showClientHistory(c);
-  const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn";contactBtn.textContent="Guardar contacto";contactBtn.onclick=()=>downloadClientContact(c);
-  actions.append(btn,contactBtn);card.appendChild(actions);wrap.appendChild(card);
+  const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn";contactBtn.textContent="Guardar contacto";
+  const contactStatus=document.createElement("small");contactStatus.className="note";contactStatus.setAttribute("aria-live","polite");
+  contactBtn.onclick=()=>saveClientToGoogle(c,contactBtn,contactStatus);
+  actions.append(btn,contactBtn);card.appendChild(actions);card.appendChild(contactStatus);wrap.appendChild(card);
  });
 }
 function showClientHistory(c){
