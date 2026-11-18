@@ -174,7 +174,7 @@ function drawClients(){
   card.innerHTML="<strong>"+esc(c.customer_name)+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
   const actions=document.createElement("div");actions.className="client-actions";
   const btn=document.createElement("button");btn.type="button";btn.className="btn";btn.textContent="Ver historial";btn.onclick=()=>showClientHistory(c);
-  const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn";contactBtn.textContent="Preparar contacto";contactBtn.onclick=()=>downloadClientContact(c);
+  const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn";contactBtn.textContent="Guardar contacto";contactBtn.onclick=()=>downloadClientContact(c);
   actions.append(btn,contactBtn);card.appendChild(actions);wrap.appendChild(card);
  });
 }
