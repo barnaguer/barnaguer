@@ -37,13 +37,22 @@
     <button class="btn primary full" type="submit">Confirmar reserva</button>
    </form>
    <div id="booking-status" aria-live="polite"></div>
-   <p class="note">Al confirmar, tu turno quedará registrado en este dispositivo. La sincronización online se configurará en una próxima etapa.</p>
+   <p class="note">Tu reserva quedará registrada de forma segura en la agenda online de BARNAGUER.</p>
   </section>
  </div>
 </main>
 <main id="admin-view" class="hidden">
- <section class="panel">
-  <div class="section-head"><h3>Panel de administración</h3><button class="btn" id="new-booking" type="button">Registrar cliente</button></div>
+ <section id="admin-login-wrap" class="panel">
+  <h3>Acceso de administración</h3>
+  <p class="note">Inicia sesión con la cuenta autorizada de BARNAGUER.</p>
+  <form id="admin-login-form">
+   <div class="field"><label for="admin-email">Correo electrónico</label><input id="admin-email" type="email" autocomplete="username" required value="barnaguer@gmail.com"></div>
+   <div class="field"><label for="admin-password">Contraseña</label><input id="admin-password" type="password" autocomplete="current-password" required></div>
+   <button class="btn primary full" id="admin-login-submit" type="submit">Iniciar sesión</button>
+  </form><div id="admin-login-status" aria-live="polite"></div>
+ </section>
+ <section id="admin-content" class="panel hidden">
+  <div class="section-head"><h3>Panel de administración</h3><div><button class="btn" id="new-booking" type="button">Registrar cliente</button> <button class="btn" id="admin-logout" type="button">Cerrar sesión</button></div></div>
   <div class="admin-grid"><div class="stat"><span>Turnos registrados</span><strong id="stat-total">0</strong></div><div class="stat"><span>Turnos de hoy</span><strong id="stat-today">0</strong></div><div class="stat"><span>Próximos espacios libres</span><strong id="stat-free">0</strong></div></div>
   <div id="admin-form-wrap" class="hidden">
    <h3>Registrar turno manualmente</h3>
@@ -57,54 +66,108 @@
   </div>
   <h3>Reservas registradas</h3><div id="booking-list"></div>
  </section>
- <p class="note" style="margin:12px 4px">Esta versión inicial guarda los datos localmente en el navegador. No uses todavía esta versión como agenda compartida entre varios dispositivos.</p>
 </main>
 <footer>BARNAGUER · Tu Barbería en Santa Fé</footer>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
+const SUPABASE_URL="https://kxrsnlttqwneqgvwwclq.supabase.co";
+const SUPABASE_KEY="sb_publishable_jNRVDDZX73NuPZt190O9vw_q8e0Lt37";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const TIMES=["10:00 AM","10:45 AM","11:30 AM","12:30 PM","1:15 PM","2:00 PM","2:45 PM","3:30 PM","4:30 PM","5:15 PM","6:00 PM"];
-const KEY="barnaguer_bookings_v1";
-let selectedDate="",selectedTime="";
+let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[];
 const $=id=>document.getElementById(id);
-const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return []}};
-const save=data=>localStorage.setItem(KEY,JSON.stringify(data));
 const pad=n=>String(n).padStart(2,"0");
 const dateKey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const fromKey=s=>{const p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2])};
 const labelDate=d=>d.toLocaleDateString("es-US",{weekday:"short",day:"2-digit",month:"short"}).replace(".","").toUpperCase();
-const toMinutes=t=>{const m=t.match(/(\d+):(\d+)\s(AM|PM)/);let h=Number(m[1])%12;if(m[3]==="PM")h+=12;return h*60+Number(m[2])};
+const toMinutes=t=>{const m=t.match(/(\\d+):(\\d+)\\s(AM|PM)/);let h=Number(m[1])%12;if(m[3]==="PM")h+=12;return h*60+Number(m[2])};
 const today=new Date();today.setHours(0,0,0,0);
-function dates(){let out=[];for(let i=0;i<3;i++){let d=new Date(today);d.setDate(today.getDate()+i);out.push(d)}return out}
+function dates(){return [0,1,2].map(i=>{const d=new Date(today);d.setDate(today.getDate()+i);return d})}
+function i18nDay(d){if(dateKey(d)===dateKey(today))return "HOY";const x=new Date(today);x.setDate(today.getDate()+1);return dateKey(d)===dateKey(x)?"MAÑANA":"PASADO MAÑANA"}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function status(id,msg){$(id).innerHTML='<div class="status">'+esc(msg)+'</div>'}
+async function loadSlots(){
+ if(!selectedDate)return;
+ $("availability-note").textContent="Consultando horarios...";
+ const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:selectedDate});
+ if(error){$("availability-note").textContent="No se pudo consultar la disponibilidad. Inténtalo de nuevo.";return}
+ bookedSlots=(data||[]).map(x=>x.booking_time);drawTimes();
+}
 function drawDates(){
  const wrap=$("dates");wrap.innerHTML="";
- dates().forEach(d=>{const k=dateKey(d),b=document.createElement("button");b.type="button";b.className="date-option"+(selectedDate===k?" selected":"");b.disabled=d.getDay()===0;b.innerHTML="<strong>"+(i18nDay(d))+"</strong><span>"+labelDate(d)+"</span>";b.onclick=()=>{selectedDate=k;selectedTime="";drawDates();drawTimes()};wrap.appendChild(b)});
+ dates().forEach(d=>{const k=dateKey(d),b=document.createElement("button");b.type="button";b.className="date-option"+(selectedDate===k?" selected":"");b.disabled=d.getDay()===0;b.innerHTML="<strong>"+i18nDay(d)+"</strong><span>"+labelDate(d)+"</span>";b.onclick=()=>{selectedDate=k;selectedTime="";drawDates();loadSlots()};wrap.appendChild(b)});
 }
-function i18nDay(d){if(dateKey(d)===dateKey(today))return "HOY";const x=new Date(today);x.setDate(today.getDate()+1);return dateKey(d)===dateKey(x)?"MAÑANA":"PASADO MAÑANA"}
 function drawTimes(){
  const wrap=$("times");wrap.innerHTML="";
  if(!selectedDate){$("availability-note").textContent="Selecciona una fecha para consultar los horarios.";return}
- const day=fromKey(selectedDate),now=new Date(),bookings=read().filter(x=>x.date===selectedDate);
- let free=0;
- TIMES.forEach(t=>{const taken=bookings.some(x=>x.time===t);const tooSoon=selectedDate===dateKey(today)&&toMinutes(t)<=(now.getHours()*60+now.getMinutes()+60);const b=document.createElement("button");b.type="button";b.className="time-option"+(selectedTime===t?" selected":"");b.textContent=t;b.disabled=taken||tooSoon||day.getDay()===0;if(!b.disabled)free++;b.title=taken?"Horario reservado":tooSoon?"Se requiere al menos una hora de anticipación":"";b.onclick=()=>{selectedTime=t;drawTimes()};wrap.appendChild(b)});
+ const day=fromKey(selectedDate),now=new Date();let free=0;
+ TIMES.forEach(t=>{const taken=bookedSlots.includes(t),tooSoon=selectedDate===dateKey(today)&&toMinutes(t)<=(now.getHours()*60+now.getMinutes()+60);const b=document.createElement("button");b.type="button";b.className="time-option"+(selectedTime===t?" selected":"");b.textContent=t;b.disabled=taken||tooSoon||day.getDay()===0;if(!b.disabled)free++;b.title=taken?"Horario reservado":tooSoon?"Se requiere al menos una hora de anticipación":"";b.onclick=()=>{selectedTime=t;drawTimes()};wrap.appendChild(b)});
  $("availability-note").textContent=free+" horarios disponibles. Los descansos están contemplados en la agenda.";
 }
-function renderAdmin(){
- const data=read().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
- $("stat-total").textContent=data.length;$("stat-today").textContent=data.filter(x=>x.date===dateKey(today)).length;
- const next=dates().map(dateKey);$("stat-free").textContent=next.reduce((n,k)=>n+TIMES.filter(t=>!data.some(x=>x.date===k&&x.time===t)&&!(k===dateKey(today)&&toMinutes(t)<=(new Date().getHours()*60+new Date().getMinutes()+60))&&fromKey(k).getDay()!==0).length,0);
+async function renderAdmin(){
+ if(!adminSession)return;
+ $("booking-list").innerHTML='<div class="empty">Cargando reservas...</div>';
+ const {data,error}=await db.from("bookings").select("*").order("booking_date").order("booking_time");
+ if(error){$("booking-list").textContent="No se pudieron cargar las reservas: "+error.message;return}
+ const all=data||[],todayKey=dateKey(today);
+ $("stat-total").textContent=all.length;
+ $("stat-today").textContent=all.filter(x=>x.booking_date===todayKey).length;
+ const upcoming=dates().map(dateKey);
+ $("stat-free").textContent=upcoming.reduce((n,k)=>n+TIMES.filter(t=>!all.some(x=>x.booking_date===k&&x.booking_time===t)&&!(k===todayKey&&toMinutes(t)<=(new Date().getHours()*60+new Date().getMinutes()+60))&&fromKey(k).getDay()!==0).length,0);
  const list=$("booking-list");list.innerHTML="";
- if(!data.length){list.innerHTML='<div class="empty">Todavía no hay reservas registradas.</div>';return}
- data.forEach(x=>{const item=document.createElement("div");item.className="booking";const info=document.createElement("div");info.innerHTML="<strong>"+esc(x.name)+"</strong><small>"+esc(x.phone)+" · "+labelDate(fromKey(x.date))+" · "+esc(x.time)+"</small>";const del=document.createElement("button");del.className="btn danger";del.type="button";del.textContent="Cancelar";del.onclick=()=>{if(confirm("¿Cancelar el turno de "+x.name+"?")){save(read().filter(y=>y.id!==x.id));renderAdmin();drawTimes()}};item.append(info,del);list.appendChild(item)});
+ if(!all.length){list.innerHTML='<div class="empty">Todavía no hay reservas registradas.</div>';return}
+ all.forEach(x=>{const item=document.createElement("div");item.className="booking";const info=document.createElement("div");info.innerHTML="<strong>"+esc(x.customer_name)+"</strong><small>"+esc(x.customer_phone)+" · "+labelDate(fromKey(x.booking_date))+" · "+esc(x.booking_time)+"</small>";const del=document.createElement("button");del.className="btn danger";del.type="button";del.textContent="Cancelar";del.onclick=async()=>{if(!confirm("¿Cancelar el turno de "+x.customer_name+"?"))return;const {error}=await db.from("bookings").delete().eq("id",x.id);if(error)alert("No se pudo cancelar: "+error.message);else{await renderAdmin();if(selectedDate===x.booking_date)await loadSlots()}};item.append(info,del);list.appendChild(item)});
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-$("booking-form").addEventListener("submit",e=>{e.preventDefault();if(!selectedDate||!selectedTime){$("booking-status").innerHTML='<div class="status">Selecciona un día y un horario antes de confirmar.</div>';return}const data=read();if(data.some(x=>x.date===selectedDate&&x.time===selectedTime)){drawTimes();$("booking-status").innerHTML='<div class="status">Ese horario acaba de ser reservado. Elige otro.</div>';return}data.push({id:String(Date.now()),name:$("client-name").value.trim(),phone:$("client-phone").value.trim(),date:selectedDate,time:selectedTime});save(data);$("booking-status").innerHTML='<div class="status">¡Tu turno quedó registrado! Te esperamos en BARNAGUER.</div>';$("booking-form").reset();selectedTime="";drawTimes();renderAdmin()});
+function show(which){
+ const admin=which==="admin";
+ $("booking-view").classList.toggle("hidden",admin);$("admin-view").classList.toggle("hidden",!admin);
+ $("tab-book").classList.toggle("active",!admin);$("tab-admin").classList.toggle("active",admin);
+ $("hero-title").textContent=admin?"Administración de turnos":"Reserva tu próximo turno";
+ $("hero-subtitle").textContent=admin?"Consulta, registra y administra las reservas.":"Elige el día y el horario que mejor te convenga.";
+ if(admin)updateAdminView();
+}
+function updateAdminView(){
+ $("admin-login-wrap").classList.toggle("hidden",!!adminSession);
+ $("admin-content").classList.toggle("hidden",!adminSession);
+ if(adminSession)renderAdmin();
+}
+$("booking-form").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!selectedDate||!selectedTime){status("booking-status","Selecciona un día y un horario antes de confirmar.");return}
+ const name=$("client-name").value.trim(),phone=$("client-phone").value.trim();
+ if(!name||!phone)return;
+ const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:selectedDate,booking_time:selectedTime});
+ if(error){if(error.code==="23505"){status("booking-status","Ese horario acaba de ser reservado. Elige otro.");await loadSlots()}else status("booking-status","No se pudo registrar la reserva. Inténtalo de nuevo.");return}
+ status("booking-status","¡Tu turno quedó registrado! Te esperamos en BARNAGUER.");
+ $("booking-form").reset();selectedTime="";await loadSlots();
+});
+$("admin-login-form").addEventListener("submit",async e=>{
+ e.preventDefault();const btn=$("admin-login-submit");btn.disabled=true;btn.textContent="Ingresando...";
+ const {data,error}=await db.auth.signInWithPassword({email:$("admin-email").value.trim(),password:$("admin-password").value});
+ btn.disabled=false;btn.textContent="Iniciar sesión";
+ if(error){status("admin-login-status","No se pudo iniciar sesión. Verifica el correo y la contraseña.");return}
+ adminSession=data.session;status("admin-login-status","");updateAdminView();
+});
+$("admin-logout").onclick=async()=>{await db.auth.signOut();adminSession=null;updateAdminView()};
 $("tab-book").onclick=()=>show("book");$("tab-admin").onclick=()=>show("admin");
-function show(which){const admin=which==="admin";$("booking-view").classList.toggle("hidden",admin);$("admin-view").classList.toggle("hidden",!admin);$("tab-book").classList.toggle("active",!admin);$("tab-admin").classList.toggle("active",admin);$("hero-title").textContent=admin?"Administración de turnos":"Reserva tu próximo turno";$("hero-subtitle").textContent=admin?"Consulta, registrá y administrá las reservas.":"Elige el día y el horario que mejor te convenga.";if(admin)renderAdmin()}
 $("new-booking").onclick=()=>{$("admin-form-wrap").classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{let d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("")};
-$("close-admin-form").onclick=()=>$("admin-form-wrap").classList.add("hidden");
-$("admin-form").addEventListener("submit",e=>{e.preventDefault();const date=$("admin-date").value,time=$("admin-time").value;if(fromKey(date).getDay()===0){alert("Los domingos la barbería permanece cerrada.");return}const data=read();if(data.some(x=>x.date===date&&x.time===time)){alert("Ese horario ya está reservado.");return}data.push({id:String(Date.now()),name:$("admin-name").value.trim(),phone:$("admin-phone").value.trim(),date,time});save(data);$("admin-form").reset();$("admin-form-wrap").classList.add("hidden");renderAdmin();drawTimes()});
-drawDates();drawTimes();renderAdmin();
+$("close-admin-form").onclick=()=> $("admin-form-wrap").classList.add("hidden");
+$("admin-form").addEventListener("submit",async e=>{
+ e.preventDefault();const date=$("admin-date").value,time=$("admin-time").value;
+ if(!date||fromKey(date).getDay()===0){alert("Los domingos la barbería permanece cerrada.");return}
+ const {error}=await db.from("bookings").insert({customer_name:$("admin-name").value.trim(),customer_phone:$("admin-phone").value.trim(),booking_date:date,booking_time:time});
+ if(error){alert(error.code==="23505"?"Ese horario ya está reservado.":"No se pudo guardar el turno: "+error.message);return}
+ $("admin-form").reset();$("admin-form-wrap").classList.add("hidden");await renderAdmin();if(selectedDate===date)await loadSlots();
+});
+async function init(){
+ const {data}=await db.auth.getSession();adminSession=data.session;
+ drawDates();updateAdminView();
+ const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();await loadSlots()}
+}
+db.auth.onAuthStateChange((_event,session)=>{adminSession=session;updateAdminView()});
+init();
 })();
 </script>
 </body></html>
