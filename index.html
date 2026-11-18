@@ -155,7 +155,7 @@ async function saveClientToGoogle(client,button,status){
  if(!client.customer_name||!client.customer_phone){status.textContent="Falta el nombre o el teléfono del cliente.";return}
  button.disabled=true;button.textContent="Conectando con Google...";
  const createContact=async token=>{
-  const parts=String(client.customer_name).trim().split(/\\s+/);
+  const parts=String(client.customer_name).trim().split(/\s+/);
   const givenName=parts.shift()||"";
   const familyName=parts.join(" ");
   const response=await fetch("https://people.googleapis.com/v1/people:createContact?personFields=names,phoneNumbers",{
