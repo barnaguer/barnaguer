@@ -66,7 +66,8 @@
   </div>
   <h3>Reservas registradas</h3><div id="booking-list"></div>
   <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
-  <h3>Historial de clientes</h3>
+  <div class="section-head"><h3>Historial de clientes</h3><button class="btn" id="export-contacts" type="button">Exportar contactos CSV</button></div>
+  <p id="export-status" class="note" aria-live="polite"></p>
   <input id="client-search" class="client-search" type="search" placeholder="Buscar por nombre o teléfono">
   <div id="client-list"></div>
   <div id="client-history" class="hidden" style="margin-top:18px;background:#fff;border-radius:12px;padding:16px"></div>
@@ -205,6 +206,29 @@ $("admin-login-form").addEventListener("submit",async e=>{
 });
 $("admin-logout").onclick=async()=>{await db.auth.signOut();adminSession=null;updateAdminView()};
 $("client-search").addEventListener("input",drawClients);
+$("export-contacts").addEventListener("click",()=>{
+ if(!adminSession){$("export-status").textContent="Inicia sesión para exportar los contactos.";return}
+ if(!allClients.length){$("export-status").textContent="No hay clientes para exportar.";return}
+ const quote=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+ const rows=[["First Name","Last Name","Phone 1 - Label","Phone 1 - Value"]];
+ allClients.forEach(client=>{
+  const parts=String(client.customer_name||"").trim().split(/\\s+/);
+  const first=parts.shift()||"";
+  const last=parts.join(" ");
+  rows.push([first,last,"Mobile",String(client.customer_phone||"")]);
+ });
+ const csv="\\uFEFF"+rows.map(row=>row.map(quote).join(",")).join("\\r\\n");
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement("a");
+ link.href=url;
+ link.download="BARNAGUER-contactos-"+dateKey(new Date())+".csv";
+ document.body.appendChild(link);
+ link.click();
+ link.remove();
+ URL.revokeObjectURL(url);
+ $("export-status").textContent="Archivo preparado con "+allClients.length+" contactos. Impórtalo en Google Contacts.";
+});
 $("tab-book").onclick=()=>show("book");$("tab-admin").onclick=()=>show("admin");
 $("new-booking").onclick=()=>{$("admin-form-wrap").classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{let d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("")};
 $("close-admin-form").onclick=()=> $("admin-form-wrap").classList.add("hidden");
