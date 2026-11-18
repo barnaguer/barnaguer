@@ -182,7 +182,7 @@ async function saveClientToGoogle(client,button,status){
    });
   }
   googlePendingSave={handleToken,button,status};
-  googleTokenClient.requestAccessToken({prompt:googleConsentRequested?"":"consent"});
+  googleTokenClient.requestAccessToken({prompt:""});
  }catch(error){status.textContent="Error al iniciar Google: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}
 }
 function drawClients(){
