@@ -69,7 +69,7 @@
   <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
   <div class="section-head"><h3>Historial de clientes</h3></div>
   <p class="note">Puedes preparar individualmente el contacto de cada cliente y guardarlo en tu cuenta de Google.</p>
-  <input id="client-search" class="client-search" type="search" placeholder="Buscar por nombre o teléfono">
+  <input id="client-search" class="client-search" type="search" placeholder="Buscar por código, nombre o teléfono">
   <div id="client-list"></div>
   <div id="client-history" class="hidden" style="margin-top:18px;background:#fff;border-radius:12px;padding:16px"></div>
  </section>
@@ -150,6 +150,8 @@ async function renderAdmin(){
  drawClients();
 }
 function allBookingsForClient(id){return cachedBookings.filter(b=>b.customer_id===id)}
+ function clientCode(c){return "Clt-"+String(c.client_number).padStart(3,"0")+"-"+String(c.priority_rating??8).padStart(2,"0")}
+ function clientLabel(c){return clientCode(c)+" | "+c.customer_name}
 async function saveClientToGoogle(client,button,status){
  if(!adminSession){status.textContent="Inicia sesión como administrador.";return}
  if(!client.customer_name||!client.customer_phone){status.textContent="Falta el nombre o el teléfono del cliente.";return}
@@ -160,7 +162,7 @@ async function saveClientToGoogle(client,button,status){
   const familyName=parts.join(" ");
   const response=await fetch("https://people.googleapis.com/v1/people:createContact?personFields=names,phoneNumbers",{
    method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
-   body:JSON.stringify({names:[{givenName,familyName}],phoneNumbers:[{value:String(client.customer_phone),type:"mobile"}]})
+   body:JSON.stringify({names:[{givenName:clientCode(client)+" | "+givenName,familyName}],phoneNumbers:[{value:String(client.customer_phone),type:"mobile"}]})
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(data.error?.message||"Google no pudo guardar el contacto.");
@@ -187,25 +189,25 @@ async function saveClientToGoogle(client,button,status){
 }
 function drawClients(){
  const q=($("client-search").value||"").trim().toLowerCase(),wrap=$("client-list");
- const visible=allClients.filter(c=>(c.customer_name+" "+c.customer_phone).toLowerCase().includes(q));
+ const visible=allClients.filter(c=>(clientLabel(c)+" "+c.customer_phone).toLowerCase().includes(q));
  wrap.innerHTML="";
  if(!visible.length){wrap.innerHTML='<div class="empty">No hay clientes que coincidan con la búsqueda.</div>';return}
  visible.forEach(c=>{
   const card=document.createElement("div");card.className="client-card";
   const visits=allBookingsForClient(c.id);
-  card.innerHTML="<strong>"+esc(c.customer_name)+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
+  card.innerHTML="<strong>"+esc(clientLabel(c))+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
   const actions=document.createElement("div");actions.className="client-actions";
   const btn=document.createElement("button");btn.type="button";btn.className="btn";btn.textContent="Ver historial";btn.onclick=()=>showClientHistory(c);
   const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn";contactBtn.textContent="Guardar contacto";
   const contactStatus=document.createElement("small");contactStatus.className="note";contactStatus.setAttribute("aria-live","polite");
   contactBtn.onclick=()=>saveClientToGoogle(c,contactBtn,contactStatus);
-  actions.append(btn,contactBtn);card.appendChild(actions);card.appendChild(contactStatus);wrap.appendChild(card);
+  const ratingWrap=document.createElement("label");ratingWrap.className="note";ratingWrap.style.display="inline-flex";ratingWrap.style.alignItems="center";ratingWrap.style.gap="6px";ratingWrap.textContent="Calificación";const ratingSelect=document.createElement("select");ratingSelect.setAttribute("aria-label","Calificación del cliente");ratingSelect.style.padding="8px";ratingSelect.style.border="1px solid var(--line)";ratingSelect.style.borderRadius="8px";[8,9,10].forEach(n=>{const option=document.createElement("option");option.value=String(n);option.textContent=String(n).padStart(2,"0");option.selected=Number(c.priority_rating??8)===n;ratingSelect.appendChild(option)});ratingSelect.onchange=async()=>{ratingSelect.disabled=true;const {error}=await db.from("clients").update({priority_rating:Number(ratingSelect.value)}).eq("id",c.id);if(error){alert("No se pudo actualizar la calificación: "+error.message);ratingSelect.value=String(c.priority_rating??8);ratingSelect.disabled=false;return}c.priority_rating=Number(ratingSelect.value);drawClients()};ratingWrap.appendChild(ratingSelect);actions.append(btn,contactBtn);card.appendChild(actions);card.appendChild(ratingWrap);card.appendChild(contactStatus);wrap.appendChild(card);
  });
 }
 function showClientHistory(c){
  const panel=$("client-history");panel.classList.remove("hidden");
  const history=allBookingsForClient(c.id).sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time));
- panel.innerHTML="<div class='section-head'><h3>"+esc(c.customer_name)+"</h3><button id='close-client-history' class='btn' type='button'>Cerrar</button></div><p class='note'>"+esc(c.customer_phone)+"</p>";
+ panel.innerHTML="<div class='section-head'><h3>"+esc(clientLabel(c))+"</h3><button id='close-client-history' class='btn' type='button'>Cerrar</button></div><p class='note'>"+esc(c.customer_phone)+"</p>";
  if(!history.length){panel.innerHTML+='<div class="empty">Este cliente todavía no tiene turnos registrados.</div>'}
  history.forEach(v=>{
   const row=document.createElement("div");row.className="history-entry";
