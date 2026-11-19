@@ -178,14 +178,54 @@ async function saveClientToGoogle(client,button,status){
     scope:"https://www.googleapis.com/auth/contacts",
     callback:async tokenResponse=>{
      const pending=googlePendingSave;googlePendingSave=null;if(!pending)return;
-     if(tokenResponse.error||!tokenResponse.access_token){pending.status.textContent="Google no autorizó el acceso. "+(tokenResponse.error_description||tokenResponse.error||"");pending.button.disabled=false;pending.button.textContent="Guardar contacto";return}
+     if(tokenResponse.error||!tokenResponse.access_token){pending.status.textContent="Google no autorizó el acceso. "+(tokenResponse.error_description||tokenResponse.error||"");pending.button.disabled=false;if(pending.buttonText)pending.button.textContent=pending.buttonText;return}
      googleAccessToken=tokenResponse.access_token;googleTokenExpiresAt=Date.now()+(Number(tokenResponse.expires_in)||3600)*1000;googleConsentRequested=true;await pending.handleToken(googleAccessToken);
     }
    });
   }
-  googlePendingSave={handleToken,button,status};
+  googlePendingSave={handleToken,button,status,buttonText:"Guardar contacto"};
   googleTokenClient.requestAccessToken({prompt:""});
  }catch(error){status.textContent="Error al iniciar Google: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}
+}
+async function updateGoogleContact(client,token){
+ const normalizePhone=value=>String(value||"").replace(/\D/g,"");
+ const query=encodeURIComponent(String(client.customer_phone));
+ const searchResponse=await fetch("https://people.googleapis.com/v1/people:searchContacts?query="+query+"&readMask=names,phoneNumbers",{
+  headers:{"Authorization":"Bearer "+token}
+ });
+ const searchData=await searchResponse.json().catch(()=>({}));
+ if(!searchResponse.ok)throw new Error(searchData.error?.message||"No se pudo buscar el contacto en Google.");
+ const matches=(searchData.results||[]).map(x=>x.person).filter(p=>(p.phoneNumbers||[]).some(n=>normalizePhone(n.value)===normalizePhone(client.customer_phone)));
+ if(!matches.length)return "La clasificación cambió en BARNAGUER, pero no encontré el contacto en Google. Guarda primero ese contacto.";
+ if(matches.length>1)return "La clasificación cambió en BARNAGUER, pero hay varios contactos con ese teléfono. No actualicé Google para evitar modificar el contacto equivocado.";
+ const person=matches[0],parts=String(client.customer_name).trim().split(/\s+/),givenName=parts.shift()||"",familyName=parts.join(" ");
+ const response=await fetch("https://people.googleapis.com/v1/"+person.resourceName+":updateContact?updatePersonFields=names",{
+  method:"PATCH",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+  body:JSON.stringify({resourceName:person.resourceName,etag:person.etag,names:[{givenName:clientCode(client)+" | "+givenName,familyName}]})
+ });
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(data.error?.message||"Google no pudo actualizar el contacto.");
+ return "Clasificación actualizada en BARNAGUER y Google Contacts.";
+}
+function requestGoogleForRating(client,button,status){
+ const handleToken=async token=>{try{status.textContent=await updateGoogleContact(client,token)}catch(error){status.textContent="Clasificación guardada en BARNAGUER, pero Google no se actualizó: "+error.message}finally{button.disabled=false}};
+ if(googleAccessToken&&Date.now()<googleTokenExpiresAt-60000){handleToken(googleAccessToken);return}
+ if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){status.textContent="Clasificación guardada en BARNAGUER. Recarga la página para conectar con Google y actualizar el contacto.";button.disabled=false;return}
+ try{
+  if(!googleTokenClient){
+   googleTokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:"611354308915-jg11vskaos1994l9ce9jaionuvndpf88.apps.googleusercontent.com",
+    scope:"https://www.googleapis.com/auth/contacts",
+    callback:async tokenResponse=>{
+     const pending=googlePendingSave;googlePendingSave=null;if(!pending)return;
+     if(tokenResponse.error||!tokenResponse.access_token){pending.status.textContent="Google no autorizó el acceso. "+(tokenResponse.error_description||tokenResponse.error||"");pending.button.disabled=false;if(pending.buttonText)pending.button.textContent=pending.buttonText;return}
+     googleAccessToken=tokenResponse.access_token;googleTokenExpiresAt=Date.now()+(Number(tokenResponse.expires_in)||3600)*1000;googleConsentRequested=true;await pending.handleToken(googleAccessToken);
+    }
+   });
+  }
+  googlePendingSave={handleToken,button,status,buttonText:null};
+  googleTokenClient.requestAccessToken({prompt:""});
+ }catch(error){status.textContent="Clasificación guardada en BARNAGUER, pero no se pudo iniciar Google: "+error.message;button.disabled=false}
 }
 function drawClients(){
  const q=($("client-search").value||"").trim().toLowerCase(),wrap=$("client-list");
@@ -201,7 +241,7 @@ function drawClients(){
   const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn";contactBtn.textContent="Guardar contacto";
   const contactStatus=document.createElement("small");contactStatus.className="note";contactStatus.setAttribute("aria-live","polite");
   contactBtn.onclick=()=>saveClientToGoogle(c,contactBtn,contactStatus);
-  const ratingWrap=document.createElement("label");ratingWrap.className="note";ratingWrap.style.display="inline-flex";ratingWrap.style.alignItems="center";ratingWrap.style.gap="6px";ratingWrap.style.marginTop="5px";ratingWrap.textContent="Calificación";const ratingSelect=document.createElement("select");ratingSelect.setAttribute("aria-label","Calificación del cliente");ratingSelect.style.padding="8px";ratingSelect.style.border="1px solid var(--line)";ratingSelect.style.borderRadius="8px";[8,9,10].forEach(n=>{const option=document.createElement("option");option.value=String(n);option.textContent=String(n).padStart(2,"0");option.selected=Number(c.priority_rating??8)===n;ratingSelect.appendChild(option)});ratingSelect.onchange=async()=>{ratingSelect.disabled=true;const {error}=await db.from("clients").update({priority_rating:Number(ratingSelect.value)}).eq("id",c.id);if(error){alert("No se pudo actualizar la calificación: "+error.message);ratingSelect.value=String(c.priority_rating??8);ratingSelect.disabled=false;return}c.priority_rating=Number(ratingSelect.value);drawClients()};ratingWrap.appendChild(ratingSelect);actions.append(btn,contactBtn);card.appendChild(actions);card.appendChild(ratingWrap);card.appendChild(contactStatus);wrap.appendChild(card);
+  const ratingWrap=document.createElement("label");ratingWrap.className="note";ratingWrap.style.display="inline-flex";ratingWrap.style.alignItems="center";ratingWrap.style.gap="6px";ratingWrap.style.marginTop="5px";ratingWrap.textContent="Calificación";const ratingSelect=document.createElement("select");ratingSelect.setAttribute("aria-label","Calificación del cliente");ratingSelect.style.padding="8px";ratingSelect.style.border="1px solid var(--line)";ratingSelect.style.borderRadius="8px";[7,8,9,10].forEach(n=>{const option=document.createElement("option");option.value=String(n);option.textContent=n===7?"07 · Bloqueado":String(n).padStart(2,"0");option.selected=Number(c.priority_rating??8)===n;ratingSelect.appendChild(option)});ratingSelect.onchange=async()=>{const previous=Number(c.priority_rating??8),next=Number(ratingSelect.value);ratingSelect.disabled=true;const {error}=await db.from("clients").update({priority_rating:next}).eq("id",c.id);if(error){alert("No se pudo actualizar la calificación: "+error.message);ratingSelect.value=String(previous);ratingSelect.disabled=false;return}c.priority_rating=next;drawClients();const currentCard=Array.from(wrap.children).find(el=>el.querySelector("strong")?.textContent===clientLabel(c));const note=currentCard?.querySelector('[aria-live="polite"]');const select=currentCard?.querySelector('select[aria-label="Calificación del cliente"]');if(note&&select){select.disabled=true;requestGoogleForRating(c,select,note)}};ratingWrap.appendChild(ratingSelect);actions.append(btn,contactBtn);card.appendChild(actions);card.appendChild(ratingWrap);card.appendChild(contactStatus);wrap.appendChild(card);
  });
 }
 function showClientHistory(c){
