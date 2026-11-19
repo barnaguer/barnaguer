@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#47342e">
+<link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/jpeg" href="./barnaguer-logo.jpg">
 <link rel="apple-touch-icon" href="./barnaguer-logo.jpg">
 <title>BARNAGUER | Tu Barbería en Santa Fé</title>
@@ -348,5 +349,14 @@ async function init(){
 }
 init();
 })();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(error => {
+      console.error("No se pudo registrar el service worker:", error);
+    });
+  });
+}
 </script>
 </body></html>
