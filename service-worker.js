@@ -1,4 +1,4 @@
-const CACHE_NAME = "barnaguer-pwa-v2";
+const CACHE_NAME = "barnaguer-pwa-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -28,6 +28,28 @@ self.addEventListener("fetch", event => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
+  const isSupabaseLibrary =
+    url.hostname === "cdn.jsdelivr.net" &&
+    url.pathname.startsWith("/npm/@supabase/supabase-js@2/");
+
+  if (isSupabaseLibrary) {
+    event.respondWith((async () => {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      try {
+        const response = await fetch(request);
+        if (response && (response.ok || response.type === "opaque")) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, response.clone());
+        }
+        return response;
+      } catch (error) {
+        return Response.error();
+      }
+    })());
+    return;
+  }
+
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
