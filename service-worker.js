@@ -1,4 +1,4 @@
-const CACHE_NAME = "barnaguer-pwa-v3";
+const CACHE_NAME = "barnaguer-pwa-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -30,7 +30,7 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   const isSupabaseLibrary =
     url.hostname === "cdn.jsdelivr.net" &&
-    url.pathname.startsWith("/npm/@supabase/supabase-js@2/");
+    url.pathname.startsWith("/npm/@supabase/supabase-js@2");
 
   if (isSupabaseLibrary) {
     event.respondWith((async () => {
