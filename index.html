@@ -100,9 +100,9 @@
 (function(){
 const SUPABASE_URL="https://kxrsnlttqwneqgvwwclq.supabase.co";
 const SUPABASE_KEY="sb_publishable_jNRVDDZX73NuPZt190O9vw_q8e0Lt37";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 const TIMES=["10:00 AM","10:45 AM","11:30 AM","12:30 PM","1:15 PM","2:00 PM","2:45 PM","3:30 PM","4:30 PM","5:15 PM","6:00 PM"];
-let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],allClients=[],cachedBookings=[];
+let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],allClients=[],cachedBookings=[],availabilityIsStale=false;
 let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false,googlePendingSave=null;
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
@@ -117,10 +117,25 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
 function status(id,msg){$(id).innerHTML='<div class="status">'+esc(msg)+'</div>'}
 async function loadSlots(){
  if(!selectedDate)return;
+ const cacheKey="barnaguer-booked-slots-"+selectedDate;
+ if(!db||!navigator.onLine){
+  try{bookedSlots=JSON.parse(localStorage.getItem(cacheKey)||"[]")}catch(error){bookedSlots=[]}
+  availabilityIsStale=true;drawTimes();
+  $("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";
+  return;
+ }
  $("availability-note").textContent="Consultando horarios...";
- const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:selectedDate});
- if(error){$("availability-note").textContent="No se pudo consultar la disponibilidad. Inténtalo de nuevo.";return}
- bookedSlots=(data||[]).map(x=>x.booking_time);drawTimes();
+ try{
+  const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:selectedDate});
+  if(error)throw error;
+  bookedSlots=(data||[]).map(x=>x.booking_time);
+  try{localStorage.setItem(cacheKey,JSON.stringify(bookedSlots))}catch(storageError){}
+  availabilityIsStale=false;drawTimes();
+ }catch(error){
+  try{bookedSlots=JSON.parse(localStorage.getItem(cacheKey)||"[]")}catch(storageError){bookedSlots=[]}
+  availabilityIsStale=true;drawTimes();
+  $("availability-note").textContent="No se pudo actualizar la disponibilidad. Se muestran los últimos horarios guardados; pueden estar desactualizados.";
+ }
 }
 function drawDates(){
  const wrap=$("dates");wrap.innerHTML="";
@@ -131,7 +146,7 @@ function drawTimes(){
  if(!selectedDate){$("availability-note").textContent="Selecciona una fecha para consultar los horarios.";return}
  const day=fromKey(selectedDate),now=new Date();let free=0;
  TIMES.forEach(t=>{const taken=bookedSlots.includes(t),tooSoon=selectedDate===dateKey(today)&&toMinutes(t)<=(now.getHours()*60+now.getMinutes()+60);const b=document.createElement("button");b.type="button";b.className="time-option"+(selectedTime===t?" selected":"");b.textContent=t;b.disabled=taken||tooSoon||day.getDay()===0;if(!b.disabled)free++;b.title=taken?"Horario reservado":tooSoon?"Se requiere al menos una hora de anticipación":"";b.onclick=()=>{selectedTime=t;drawTimes()};wrap.appendChild(b)});
- $("availability-note").textContent=free+" horarios disponibles. Los descansos están contemplados en la agenda.";
+ if(!availabilityIsStale)$("availability-note").textContent=free+" horarios disponibles. Los descansos están contemplados en la agenda.";
 }
 async function renderAdmin(){
  if(!adminSession)return;
@@ -314,6 +329,7 @@ function updateAdminView(){
 $("booking-form").addEventListener("submit",async e=>{
  e.preventDefault();
  if(!selectedDate||!selectedTime){status("booking-status","Selecciona un día y un horario antes de confirmar.");return}
+  if(!db||!navigator.onLine){status("booking-status","Sin conexión: no se puede confirmar la reserva. Conéctate a Internet o contacta por WhatsApp.");return}
  const name=$("client-name").value.trim(),phone=$("client-phone").value.trim();
  if(!name||!phone)return;
  const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:selectedDate,booking_time:selectedTime});
@@ -342,9 +358,11 @@ $("admin-form").addEventListener("submit",async e=>{
  $("admin-form").reset();$("admin-form-wrap").classList.add("hidden");await renderAdmin();if(selectedDate===date)await loadSlots();
 });
 async function init(){
- const {data}=await db.auth.getSession();adminSession=data.session;
  drawDates();updateAdminView();
- const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();await loadSlots()}
+ const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();drawTimes()}
+ if(!db){availabilityIsStale=true;$("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";if(window.location.hash==="#admin")show("admin");return}
+ try{const {data}=await db.auth.getSession();adminSession=data.session;updateAdminView()}catch(error){}
+ await loadSlots();
  if(window.location.hash==="#admin")show("admin");
 }
 init();
