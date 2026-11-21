@@ -1,4 +1,4 @@
-const CACHE_NAME = "barnaguer-pwa-v7";
+const CACHE_NAME = "barnaguer-pwa-v8";
 const SUPABASE_LIBRARY_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 const APP_SHELL = [
   "./",
@@ -41,6 +41,28 @@ self.addEventListener("fetch", event => {
   const isSupabaseLibrary =
     url.hostname === "cdn.jsdelivr.net" &&
     url.pathname.startsWith("/npm/@supabase/supabase-js@2");
+
+  const isGoogleFont =
+    url.hostname === "fonts.googleapis.com" ||
+    url.hostname === "fonts.gstatic.com";
+
+  if (isGoogleFont) {
+    event.respondWith((async () => {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      try {
+        const response = await fetch(request);
+        if (response && (response.ok || response.type === "opaque")) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, response.clone());
+        }
+        return response;
+      } catch (error) {
+        return Response.error();
+      }
+    })());
+    return;
+  }
 
   if (isSupabaseLibrary) {
     event.respondWith((async () => {
