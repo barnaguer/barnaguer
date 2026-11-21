@@ -202,7 +202,8 @@ function drawTimes(){
  if(!availabilityIsStale)$("availability-note").textContent=free+" horarios disponibles. Los descansos están contemplados en la agenda.";
 }
 async function cacheUpcomingSlots(){
- if(!db||!navigator.onLine||cacheUpcomingSlots.running)return;
+ if(!db||!navigator.onLine)return;
+ if(cacheUpcomingSlots.running){cacheUpcomingSlots.pending=true;return}
  cacheUpcomingSlots.running=true;
  try{
   const pending=dates().filter(d=>d.getDay()!==0&&dateKey(d)!==selectedDate);
@@ -214,7 +215,13 @@ async function cacheUpcomingSlots(){
     localStorage.setItem(cacheKey,JSON.stringify((data||[]).map(x=>x.booking_time)));
    }catch(error){}
   }));
- }finally{cacheUpcomingSlots.running=false}
+ }finally{
+  cacheUpcomingSlots.running=false;
+  if(cacheUpcomingSlots.pending&&db&&navigator.onLine){
+   cacheUpcomingSlots.pending=false;
+   cacheUpcomingSlots();
+  }
+ }
 }
 async function renderAdmin(){
  if(!adminSession)return;
