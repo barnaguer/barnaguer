@@ -138,22 +138,29 @@ $("client-name").addEventListener("input",saveBookingDraft);
 $("client-phone").addEventListener("input",saveBookingDraft);
 async function loadSlots(){
  if(!selectedDate)return;
- const cacheKey="barnaguer-booked-slots-"+selectedDate;
+ const requestedDate=selectedDate;
+ const cacheKey="barnaguer-booked-slots-"+requestedDate;
+ const readCache=()=>{try{return JSON.parse(localStorage.getItem(cacheKey)||"[]")}catch(error){return []}};
  if(!db||!navigator.onLine){
-  try{bookedSlots=JSON.parse(localStorage.getItem(cacheKey)||"[]")}catch(error){bookedSlots=[]}
+  bookedSlots=readCache();
   availabilityIsStale=true;drawTimes();
   $("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";
   return;
  }
- $("availability-note").textContent="Consultando horarios...";
+ bookedSlots=readCache();
+ availabilityIsStale=true;
+ drawTimes();
+ $("availability-note").textContent=bookedSlots.length?"Actualizando disponibilidad...":"Consultando horarios...";
  try{
-  const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:selectedDate});
+  const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:requestedDate});
   if(error)throw error;
-  bookedSlots=(data||[]).map(x=>x.booking_time);
-  try{localStorage.setItem(cacheKey,JSON.stringify(bookedSlots))}catch(storageError){}
+  const freshSlots=(data||[]).map(x=>x.booking_time);
+  try{localStorage.setItem(cacheKey,JSON.stringify(freshSlots))}catch(storageError){}
+  if(selectedDate!==requestedDate)return;
+  bookedSlots=freshSlots;
   availabilityIsStale=false;drawTimes();
  }catch(error){
-  try{bookedSlots=JSON.parse(localStorage.getItem(cacheKey)||"[]")}catch(storageError){bookedSlots=[]}
+  if(selectedDate!==requestedDate)return;
   availabilityIsStale=true;drawTimes();
   $("availability-note").textContent="No se pudo actualizar la disponibilidad. Se muestran los últimos horarios guardados; pueden estar desactualizados.";
  }
