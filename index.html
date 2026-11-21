@@ -179,16 +179,19 @@ function drawTimes(){
  if(!availabilityIsStale)$("availability-note").textContent=free+" horarios disponibles. Los descansos están contemplados en la agenda.";
 }
 async function cacheUpcomingSlots(){
- if(!db||!navigator.onLine)return;
- const pending=dates().filter(d=>d.getDay()!==0&&dateKey(d)!==selectedDate);
- await Promise.all(pending.map(async d=>{
-  const key=dateKey(d),cacheKey="barnaguer-booked-slots-"+key;
-  try{
-   const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:key});
-   if(error||!navigator.onLine)return;
-   localStorage.setItem(cacheKey,JSON.stringify((data||[]).map(x=>x.booking_time)));
-  }catch(error){}
- }));
+ if(!db||!navigator.onLine||cacheUpcomingSlots.running)return;
+ cacheUpcomingSlots.running=true;
+ try{
+  const pending=dates().filter(d=>d.getDay()!==0&&dateKey(d)!==selectedDate);
+  await Promise.all(pending.map(async d=>{
+   const key=dateKey(d),cacheKey="barnaguer-booked-slots-"+key;
+   try{
+    const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:key});
+    if(error||!navigator.onLine)return;
+    localStorage.setItem(cacheKey,JSON.stringify((data||[]).map(x=>x.booking_time)));
+   }catch(error){}
+  }));
+ }finally{cacheUpcomingSlots.running=false}
 }
 async function renderAdmin(){
  if(!adminSession)return;
