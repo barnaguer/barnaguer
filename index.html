@@ -440,7 +440,12 @@ function drawClients(){
 function showClientHistory(c){
  const panel=$("client-history");panel.classList.remove("hidden");
  const history=allBookingsForClient(c.id).sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time));
+ const activeHistory=history.filter(v=>v.status!=="canceled");
+ const todayKey=dateKey(today);
+ const upcoming=activeHistory.filter(v=>v.booking_date>=todayKey).sort((a,b)=>(a.booking_date+a.booking_time).localeCompare(b.booking_date+b.booking_time))[0];
+ const latest=activeHistory[0];
  panel.innerHTML="<div class='section-head'><h3>"+esc(clientLabel(c))+"</h3><button id='close-client-history' class='btn' type='button'>Cerrar</button></div><p class='note'>"+esc(c.customer_phone)+"</p>";
+ if(upcoming){panel.innerHTML+="<p class='note'><strong>Próximo turno:</strong> "+labelDate(fromKey(upcoming.booking_date))+" · "+esc(upcoming.booking_time)+"</p>"}else if(latest){panel.innerHTML+="<p class='note'><strong>Último turno confirmado:</strong> "+labelDate(fromKey(latest.booking_date))+" · "+esc(latest.booking_time)+"</p>"}
  if(!history.length){panel.innerHTML+='<div class="empty">Este cliente todavía no tiene turnos registrados.</div>'}
  history.forEach(v=>{
   const row=document.createElement("div");row.className="history-entry";
