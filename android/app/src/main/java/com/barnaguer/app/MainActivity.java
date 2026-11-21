@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,13 +27,21 @@ public class MainActivity extends Activity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new AlarmBridge(), "BarnaguerNative");
         setContentView(webView);
-        if (Build.VERSION.SDK_INT >= 33) {
-            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 41);
-        }
         webView.loadUrl("https://barnaguer.github.io/barnaguer/");
     }
 
     private class AlarmBridge {
+        @JavascriptInterface public boolean hasNotificationPermission() {
+            return Build.VERSION.SDK_INT < 33 ||
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        }
+
+        @JavascriptInterface public boolean requestNotificationPermission() {
+            if (Build.VERSION.SDK_INT < 33 || hasNotificationPermission()) return true;
+            runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 42));
+            return false;
+        }
+
         @JavascriptInterface public boolean hasExactAlarmPermission() {
             if (Build.VERSION.SDK_INT < 31) return true;
             AlarmManager manager = getSystemService(AlarmManager.class);
