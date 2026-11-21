@@ -261,7 +261,7 @@ async function renderAdmin(){
      alert(error.code==="23505"?"No se puede reactivar: ese horario ya está ocupado.":"No se pudo actualizar: "+error.message);
      return;
     }
-    await renderAdmin();if(selectedDate===x.booking_date)await loadSlots();
+    await renderAdmin();if(selectedDate===x.booking_date)await loadSlots();await cacheUpcomingSlots();
    }catch(error){
     alert("No se pudo completar la operación. Comprueba tu conexión e inténtalo de nuevo.");
    }finally{
