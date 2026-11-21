@@ -106,6 +106,7 @@ const SUPABASE_KEY="sb_publishable_jNRVDDZX73NuPZt190O9vw_q8e0Lt37";
 const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 const TIMES=["10:00 AM","10:45 AM","11:30 AM","12:30 PM","1:15 PM","2:00 PM","2:45 PM","3:30 PM","4:30 PM","5:15 PM","6:00 PM"];
 let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],allClients=[],cachedBookings=[],availabilityIsStale=false;
+let adminRenderRequest=0;
 let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false,googlePendingSave=null;
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
@@ -215,6 +216,7 @@ async function cacheUpcomingSlots(){
 }
 async function renderAdmin(){
  if(!adminSession)return;
+ const requestId=++adminRenderRequest;
  $("booking-list").innerHTML='<div class="empty">Cargando reservas...</div>';
  let bookingResult,clientResult;
  try{
@@ -223,10 +225,12 @@ async function renderAdmin(){
    db.from("clients").select("*").order("customer_name")
   ]);
  }catch(error){
+  if(requestId!==adminRenderRequest||!adminSession)return;
   $("booking-list").textContent="No se pudieron cargar las reservas. Comprueba tu conexión e inténtalo de nuevo.";
   $("client-list").textContent="No se pudo cargar el historial de clientes.";
   return;
  }
+ if(requestId!==adminRenderRequest||!adminSession)return;
  if(bookingResult.error){$("booking-list").textContent="No se pudieron cargar las reservas: "+bookingResult.error.message;return}
  if(clientResult.error){$("client-list").textContent="No se pudo cargar el historial de clientes: "+clientResult.error.message;return}
  const all=bookingResult.data||[],todayKey=dateKey(today);
