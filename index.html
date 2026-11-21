@@ -343,7 +343,22 @@ function drawClients(){
   const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn"+(c.google_contact_saved?" saved":"");contactBtn.textContent=c.google_contact_saved?"Guardado en Google":"Guardar contacto";contactBtn.disabled=!!c.google_contact_saved;
   const contactStatus=document.createElement("small");contactStatus.className="note";contactStatus.setAttribute("aria-live","polite");
   contactBtn.onclick=()=>saveClientToGoogle(c,contactBtn,contactStatus);
-  const ratingWrap=document.createElement("label");ratingWrap.className="note";ratingWrap.style.display="inline-flex";ratingWrap.style.alignItems="center";ratingWrap.style.gap="6px";ratingWrap.style.marginTop="5px";ratingWrap.textContent="Calificación";const ratingSelect=document.createElement("select");ratingSelect.setAttribute("aria-label","Calificación del cliente");ratingSelect.style.padding="8px";ratingSelect.style.border="1px solid var(--line)";ratingSelect.style.borderRadius="8px";[7,8,9,10].forEach(n=>{const option=document.createElement("option");option.value=String(n);option.textContent=n===7?"07 · Bloqueado":String(n).padStart(2,"0");option.selected=Number(c.priority_rating??8)===n;ratingSelect.appendChild(option)});ratingSelect.onchange=async()=>{const previous=Number(c.priority_rating??8),next=Number(ratingSelect.value);ratingSelect.disabled=true;const {error}=await db.from("clients").update({priority_rating:next}).eq("id",c.id);if(error){alert("No se pudo actualizar la calificación: "+error.message);ratingSelect.value=String(previous);ratingSelect.disabled=false;return}c.priority_rating=next;drawClients();const currentCard=Array.from(wrap.children).find(el=>el.querySelector("strong")?.textContent===clientLabel(c));const note=currentCard?.querySelector('[aria-live="polite"]');const select=currentCard?.querySelector('select[aria-label="Calificación del cliente"]');if(note&&select){select.disabled=true;requestGoogleForRating(c,select,note)}};ratingWrap.appendChild(ratingSelect);actions.append(btn,contactBtn);card.appendChild(actions);card.appendChild(ratingWrap);card.appendChild(contactStatus);wrap.appendChild(card);
+  const ratingWrap=document.createElement("label");ratingWrap.className="note";ratingWrap.style.display="inline-flex";ratingWrap.style.alignItems="center";ratingWrap.style.gap="6px";ratingWrap.style.marginTop="5px";ratingWrap.textContent="Calificación";const ratingSelect=document.createElement("select");ratingSelect.setAttribute("aria-label","Calificación del cliente");ratingSelect.style.padding="8px";ratingSelect.style.border="1px solid var(--line)";ratingSelect.style.borderRadius="8px";[7,8,9,10].forEach(n=>{const option=document.createElement("option");option.value=String(n);option.textContent=n===7?"07 · Bloqueado":String(n).padStart(2,"0");option.selected=Number(c.priority_rating??8)===n;ratingSelect.appendChild(option)});ratingSelect.onchange=async()=>{
+  const previous=Number(c.priority_rating??8),next=Number(ratingSelect.value);ratingSelect.disabled=true;
+  try{
+   if(!db||!navigator.onLine)throw new Error("No hay conexión a Internet.");
+   const {error}=await db.from("clients").update({priority_rating:next}).eq("id",c.id);
+   if(error)throw error;
+   c.priority_rating=next;drawClients();
+   const currentCard=Array.from(wrap.children).find(el=>el.querySelector("strong")?.textContent===clientLabel(c));
+   const note=currentCard?.querySelector('[aria-live="polite"]');
+   const select=currentCard?.querySelector('select[aria-label="Calificación del cliente"]');
+   if(note&&select){select.disabled=true;requestGoogleForRating(c,select,note)}
+  }catch(error){
+   alert("No se pudo actualizar la calificación: "+(error.message||"Comprueba tu conexión e inténtalo de nuevo."));
+   ratingSelect.value=String(previous);ratingSelect.disabled=false;
+  }
+ };ratingWrap.appendChild(ratingSelect);actions.append(btn,contactBtn);card.appendChild(actions);card.appendChild(ratingWrap);card.appendChild(contactStatus);wrap.appendChild(card);
  });
 }
 function showClientHistory(c){
