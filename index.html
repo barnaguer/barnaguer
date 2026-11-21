@@ -458,6 +458,7 @@ $("booking-form").addEventListener("submit",async e=>{
   status("booking-status","¡Tu turno quedó registrado! Te esperamos en BARNAGUER.");
   $("booking-form").reset();selectedTime="";try{localStorage.removeItem(DRAFT_KEY)}catch(storageError){}
   await loadSlots();
+  cacheUpcomingSlots();
  }catch(error){
   status("booking-status","No se pudo completar la reserva. Comprueba tu conexión e inténtalo de nuevo.");
  }finally{
