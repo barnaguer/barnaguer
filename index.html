@@ -106,7 +106,7 @@ const SUPABASE_KEY="sb_publishable_jNRVDDZX73NuPZt190O9vw_q8e0Lt37";
 const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 const TIMES=["10:00 AM","10:45 AM","11:30 AM","12:30 PM","1:15 PM","2:00 PM","2:45 PM","3:30 PM","4:30 PM","5:15 PM","6:00 PM"];
 let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],allClients=[],cachedBookings=[],availabilityIsStale=false;
-let adminRenderRequest=0;
+let adminRenderRequest=0,slotsRequestId=0;
 let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false,googlePendingSave=null;
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
@@ -142,6 +142,7 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 window.addEventListener("focus",refreshCurrentDate);
 async function loadSlots(){
  if(!selectedDate)return;
+ const requestId=++slotsRequestId;
  const requestedDate=selectedDate;
  const cacheKey="barnaguer-booked-slots-"+requestedDate;
  const readCache=()=>{try{return JSON.parse(localStorage.getItem(cacheKey)||"[]")}catch(error){return []}};
@@ -158,13 +159,13 @@ async function loadSlots(){
  try{
   const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:requestedDate});
   if(error)throw error;
+  if(requestId!==slotsRequestId||selectedDate!==requestedDate)return;
   const freshSlots=(data||[]).map(x=>x.booking_time);
   try{localStorage.setItem(cacheKey,JSON.stringify(freshSlots))}catch(storageError){}
-  if(selectedDate!==requestedDate)return;
   bookedSlots=freshSlots;
   availabilityIsStale=false;drawTimes();
  }catch(error){
-  if(selectedDate!==requestedDate)return;
+  if(requestId!==slotsRequestId||selectedDate!==requestedDate)return;
   availabilityIsStale=true;drawTimes();
   $("availability-note").textContent="No se pudo actualizar la disponibilidad. Se muestran los últimos horarios guardados; pueden estar desactualizados.";
  }
