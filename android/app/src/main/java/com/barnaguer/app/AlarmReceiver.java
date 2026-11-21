@@ -8,15 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
 import android.net.Uri;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.Base64;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
     private static final String CHANNEL = "barnaguer_turn_alarms_v2";
-    private static final String BRAND_IMAGE = "DATA_PLACEHOLDER";
 
     @Override public void onReceive(Context context, Intent intent) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -40,20 +36,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         String title = intent.getStringExtra("title");
         String message = intent.getStringExtra("message");
-        Bitmap brandImage = null;
-        try {
-            byte[] imageBytes = Base64.decode(BRAND_IMAGE, Base64.DEFAULT);
-            brandImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-        } catch (IllegalArgumentException ignored) {}
-
         NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(title == null ? "BARNAGUER" : title)
             .setContentText(message == null ? "Próximo turno" : message)
-            .setStyle(brandImage != null
-                ? new NotificationCompat.BigPictureStyle().bigPicture(brandImage).bigLargeIcon((Bitmap) null).setSummaryText(message == null ? "Próximo turno" : message)
-                : new NotificationCompat.BigTextStyle().bigText(message == null ? "Próximo turno" : message))
-            .setLargeIcon(brandImage)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(message == null ? "Próximo turno" : message))
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
