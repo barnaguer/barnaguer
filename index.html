@@ -415,7 +415,7 @@ $("admin-form").addEventListener("submit",async e=>{
  if(!date||fromKey(date).getDay()===0){alert("Los domingos la barbería permanece cerrada.");return}
  const {error}=await db.from("bookings").insert({customer_name:$("admin-name").value.trim(),customer_phone:$("admin-phone").value.trim(),booking_date:date,booking_time:time});
  if(error){alert(error.code==="23505"?"Ese horario ya está reservado.":error.code==="P0001"&&/bloqueado/i.test(error.message||"")?"No es posible realizar esta reserva, llame o escriba al +53 5478 9515":"No se pudo guardar el turno: "+error.message);return}
- $("admin-form").reset();$("admin-form-wrap").classList.add("hidden");await renderAdmin();if(selectedDate===date)await loadSlots();
+ $("admin-form").reset();$("admin-form-wrap").classList.add("hidden");await renderAdmin();if(selectedDate===date)await loadSlots();await cacheUpcomingSlots();
 });
 function updateConnectionStatus(){const banner=$("connection-status");if(!banner)return;const unavailable=!navigator.onLine||!db;banner.classList.toggle("visible",unavailable);banner.textContent=!navigator.onLine?"Sin conexión a Internet. Puedes consultar la información guardada, pero las reservas y la administración requieren conexión.":!db?"No se pudo cargar el servicio de reservas. La información de BARNAGUER sigue disponible; para reservar o administrar, recupera la conexión e inténtalo de nuevo.":"";}
 window.addEventListener("offline",updateConnectionStatus);
