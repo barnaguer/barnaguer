@@ -517,14 +517,16 @@ window.addEventListener("offline",updateConnectionStatus);
 window.addEventListener("online",updateConnectionStatus);
 updateConnectionStatus();
 window.addEventListener("online",async()=>{
- if(!selectedDate)return;
- $("availability-note").textContent="Conexión restablecida. Comprobando disponibilidad...";
- await loadSlots();
- await cacheUpcomingSlots();
- if(selectedTime&&bookedSlots.includes(selectedTime)){
-  selectedTime="";saveBookingDraft();drawTimes();
-  status("booking-status","Ese horario ya no está disponible. Selecciona otro para continuar.");
+ if(selectedDate){
+  $("availability-note").textContent="Conexión restablecida. Comprobando disponibilidad...";
+  await loadSlots();
+  await cacheUpcomingSlots();
+  if(selectedTime&&bookedSlots.includes(selectedTime)){
+   selectedTime="";saveBookingDraft();drawTimes();
+   status("booking-status","Ese horario ya no está disponible. Selecciona otro para continuar.");
+  }
  }
+ if(adminSession)await renderAdmin();
 });
 function init(){
  restoreBookingDraft();drawDates();updateAdminView();
