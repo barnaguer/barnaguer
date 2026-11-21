@@ -220,9 +220,21 @@ async function renderAdmin(){
    const next=x.status==="canceled"?"confirmed":"canceled";
    if(next==="canceled"&&!confirm("¿Cancelar el turno de "+x.customer_name+"?"))return;
    if(next==="confirmed"&&!confirm("¿Reactivar este turno?"))return;
-   const {error}=await db.from("bookings").update({status:next}).eq("id",x.id);
-   if(error){alert(error.code==="23505"?"No se puede reactivar: ese horario ya está ocupado.":"No se pudo actualizar: "+error.message);return}
-   await renderAdmin();if(selectedDate===x.booking_date)await loadSlots();
+   if(action.disabled)return;
+   const originalText=action.textContent;action.disabled=true;action.textContent=next==="canceled"?"Cancelando...":"Reactivando...";
+   try{
+    if(!db||!navigator.onLine)throw new Error("No hay conexión a Internet.");
+    const {error}=await db.from("bookings").update({status:next}).eq("id",x.id);
+    if(error){
+     alert(error.code==="23505"?"No se puede reactivar: ese horario ya está ocupado.":"No se pudo actualizar: "+error.message);
+     return;
+    }
+    await renderAdmin();if(selectedDate===x.booking_date)await loadSlots();
+   }catch(error){
+    alert("No se pudo completar la operación. Comprueba tu conexión e inténtalo de nuevo.");
+   }finally{
+    action.disabled=false;action.textContent=originalText;
+   }
   };
   item.append(info,action);list.appendChild(item);
  });
