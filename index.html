@@ -442,6 +442,8 @@ function updateAdminView(){
 $("booking-form").addEventListener("submit",async e=>{
  e.preventDefault();
  if(!selectedDate||!selectedTime){status("booking-status","Selecciona un día y un horario antes de confirmar.");return}
+ if(!dates().some(d=>dateKey(d)===selectedDate)||fromKey(selectedDate).getDay()===0||!TIMES.includes(selectedTime)){selectedTime="";saveBookingDraft();drawTimes();status("booking-status","La fecha o el horario seleccionado ya no es válido. Elige otro para continuar.");return}
+ if(selectedDate===dateKey(today)&&toMinutes(selectedTime)<=(new Date().getHours()*60+new Date().getMinutes()+60)){selectedTime="";saveBookingDraft();drawTimes();status("booking-status","Ese horario requiere al menos una hora de anticipación. Selecciona otro.");return}
  if(!db||!navigator.onLine){status("booking-status","Sin conexión: no se puede confirmar la reserva. Conéctate a Internet o contacta por WhatsApp.");return}
  const name=$("client-name").value.trim(),phone=$("client-phone").value.trim();
  if(!name||!phone)return;
