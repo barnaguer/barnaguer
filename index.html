@@ -254,7 +254,14 @@ async function renderAdmin(){
  $("stat-free").textContent=upcoming.reduce((n,k)=>n+TIMES.filter(t=>!confirmed.some(x=>x.booking_date===k&&x.booking_time===t)&&!(k===todayKey&&toMinutes(t)<=(new Date().getHours()*60+new Date().getMinutes()+60))&&fromKey(k).getDay()!==0).length,0);
  const list=$("booking-list");list.innerHTML="";
  if(!all.length){list.innerHTML='<div class="empty">Todavía no hay reservas registradas.</div>'}
- all.forEach(x=>{
+ const orderedBookings=[...all].sort((a,b)=>{
+  const aPast=a.booking_date<todayKey,bPast=b.booking_date<todayKey;
+  if(aPast!==bPast)return aPast?1:-1;
+  const dateOrder=a.booking_date.localeCompare(b.booking_date);
+  if(dateOrder!==0)return aPast?-dateOrder:dateOrder;
+  return a.booking_time.localeCompare(b.booking_time);
+ });
+ orderedBookings.forEach(x=>{
   const item=document.createElement("div");item.className="booking";
   const info=document.createElement("div");
   info.innerHTML="<strong>"+esc(x.customer_name)+"</strong><small>"+esc(x.customer_phone)+" · "+labelDate(fromKey(x.booking_date))+" · "+esc(x.booking_time)+" · "+(x.status==="canceled"?'<span class="tag-canceled">Cancelado</span>':"Confirmado")+"</small>";
