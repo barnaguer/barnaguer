@@ -96,6 +96,7 @@
   <p class="note">Puedes preparar individualmente el contacto de cada cliente y guardarlo en tu cuenta de Google.</p>
   <input id="client-search" class="client-search" type="search" placeholder="Buscar por código, nombre o teléfono">
   <select id="client-rating-filter" class="client-search" aria-label="Filtrar clientes por clasificación" style="margin-top:-4px"><option value="all">Mostrar todos los clientes</option><option value="10">Clasificación 10</option><option value="9">Clasificación 09</option><option value="8">Clasificación 08</option><option value="7">Bloqueados (07)</option></select>
+  <select id="client-sort" class="client-search" aria-label="Ordenar clientes" style="margin-top:-4px"><option value="next">Ordenar: próxima visita</option><option value="visits">Ordenar: más visitas</option><option value="name">Ordenar: nombre A-Z</option></select>
   <div id="client-list"></div>
   <div id="client-history" class="hidden" style="margin-top:18px;background:#fff;border-radius:12px;padding:16px"></div>
  </section>
@@ -407,6 +408,9 @@ function requestGoogleForRating(client,button,status){
 function drawClients(){
  const q=($("client-search").value||"").trim().toLowerCase(),rating=$("client-rating-filter").value,wrap=$("client-list");
  const visible=allClients.filter(c=>(clientLabel(c)+" "+c.customer_phone).toLowerCase().includes(q)&&(rating==="all"||Number(c.priority_rating??8)===Number(rating)));
+ const sort=$("client-sort")?.value||"next",todayKey=dateKey(today);
+ const visitStats=new Map(allClients.map(c=>{const active=allBookingsForClient(c.id).filter(v=>v.status!=="canceled");const future=active.filter(v=>v.booking_date>=todayKey).sort((a,b)=>(a.booking_date+a.booking_time).localeCompare(b.booking_date+b.booking_time));const latest=active.sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time))[0];return [c.id,{count:active.length,next:future[0],latest}]}));
+ visible.sort((a,b)=>{const A=visitStats.get(a.id),B=visitStats.get(b.id);if(sort==="name")return String(a.customer_name||"").localeCompare(String(b.customer_name||""),"es");if(sort==="visits")return B.count-A.count||String(a.customer_name||"").localeCompare(String(b.customer_name||""),"es");if(A.next&&B.next)return (A.next.booking_date+A.next.booking_time).localeCompare(B.next.booking_date+B.next.booking_time);if(A.next)return -1;if(B.next)return 1;return (B.latest?.booking_date||"").localeCompare(A.latest?.booking_date||"")||String(a.customer_name||"").localeCompare(String(b.customer_name||""),"es")});
  wrap.innerHTML="";
  if(!visible.length){wrap.innerHTML='<div class="empty">No hay clientes que coincidan con la búsqueda.</div>';return}
  visible.forEach(c=>{
@@ -533,6 +537,7 @@ $("admin-logout").onclick=async()=>{
 };
 $("client-search").addEventListener("input",drawClients);
 $("client-rating-filter").addEventListener("change",drawClients);
+$("client-sort").addEventListener("change",drawClients);
 $("booking-search").addEventListener("input",filterBookingList);
 $("booking-status-filter").addEventListener("change",filterBookingList);
 
