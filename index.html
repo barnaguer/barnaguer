@@ -444,7 +444,19 @@ $("admin-login-form").addEventListener("submit",async e=>{
   btn.disabled=false;btn.textContent="Iniciar sesión";
  }
 });
-$("admin-logout").onclick=async()=>{await db.auth.signOut();adminSession=null;updateAdminView()};
+$("admin-logout").onclick=async()=>{
+ const btn=$("admin-logout");
+ btn.disabled=true;btn.textContent="Cerrando sesión...";
+ try{
+  const {error}=await db.auth.signOut();
+  if(error)throw error;
+  adminSession=null;updateAdminView();
+ }catch(error){
+  status("admin-login-status","No se pudo cerrar la sesión. Comprueba tu conexión e inténtalo de nuevo.");
+ }finally{
+  btn.disabled=false;btn.textContent="Cerrar sesión";
+ }
+};
 $("client-search").addEventListener("input",drawClients);
 
 $("brand-admin-access").onclick=()=>show("admin");$("tab-book").onclick=()=>show("book");$("tab-services").onclick=()=>show("services");
