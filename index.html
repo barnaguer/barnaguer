@@ -167,6 +167,18 @@ function drawTimes(){
  TIMES.forEach(t=>{const taken=bookedSlots.includes(t),tooSoon=selectedDate===dateKey(today)&&toMinutes(t)<=(now.getHours()*60+now.getMinutes()+60);const b=document.createElement("button");b.type="button";b.className="time-option"+(selectedTime===t?" selected":"");b.textContent=t;b.disabled=taken||tooSoon||day.getDay()===0;if(!b.disabled)free++;b.title=taken?"Horario reservado":tooSoon?"Se requiere al menos una hora de anticipación":"";b.onclick=()=>{selectedTime=t;saveBookingDraft();drawTimes()};wrap.appendChild(b)});
  if(!availabilityIsStale)$("availability-note").textContent=free+" horarios disponibles. Los descansos están contemplados en la agenda.";
 }
+async function cacheUpcomingSlots(){
+ if(!db||!navigator.onLine)return;
+ for(const d of dates()){
+  if(d.getDay()===0)continue;
+  const key=dateKey(d),cacheKey="barnaguer-booked-slots-"+key;
+  try{
+   const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:key});
+   if(error)continue;
+   localStorage.setItem(cacheKey,JSON.stringify((data||[]).map(x=>x.booking_time)));
+  }catch(error){}
+ }
+}
 async function renderAdmin(){
  if(!adminSession)return;
  $("booking-list").innerHTML='<div class="empty">Cargando reservas...</div>';
@@ -380,6 +392,7 @@ window.addEventListener("online",async()=>{
  if(!selectedDate)return;
  $("availability-note").textContent="Conexión restablecida. Comprobando disponibilidad...";
  await loadSlots();
+ await cacheUpcomingSlots();
  if(selectedTime&&bookedSlots.includes(selectedTime)){
   selectedTime="";saveBookingDraft();drawTimes();
   status("booking-status","Ese horario ya no está disponible. Selecciona otro para continuar.");
@@ -391,6 +404,7 @@ async function init(){
  if(!db){availabilityIsStale=true;$("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";if(window.location.hash==="#admin")show("admin");return}
  try{const {data}=await db.auth.getSession();adminSession=data.session;updateAdminView()}catch(error){}
  await loadSlots();
+ await cacheUpcomingSlots();
  if(window.location.hash==="#admin")show("admin");
 }
 init();
