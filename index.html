@@ -413,6 +413,8 @@ function drawClients(){
   const card=document.createElement("div");card.className="client-card";
   const visits=allBookingsForClient(c.id);
   card.innerHTML="<strong>"+esc(clientLabel(c))+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
+  const clientRating=Number(c.priority_rating??8);
+  card.innerHTML+="<small><strong>Clasificación:</strong> "+(clientRating===7?"07 · Bloqueado":String(clientRating).padStart(2,"0"))+"</small>";
   const activeVisits=visits.filter(v=>v.status!=="canceled"),todayKey=dateKey(today);
   const nextVisit=activeVisits.filter(v=>v.booking_date>=todayKey).sort((a,b)=>(a.booking_date+a.booking_time).localeCompare(b.booking_date+b.booking_time))[0];
   const lastVisit=activeVisits.sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time))[0];
