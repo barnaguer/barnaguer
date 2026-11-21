@@ -113,7 +113,7 @@ const dateKey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const fromKey=s=>{const p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2])};
 const labelDate=d=>{const weekday=new Intl.DateTimeFormat("es",{weekday:"short"}).format(d).replace(/\./g,"");const day=new Intl.DateTimeFormat("es",{day:"2-digit"}).format(d);const month=new Intl.DateTimeFormat("es",{month:"short"}).format(d).replace(/\./g,"");return `${weekday} ${day} ${month}`.toUpperCase()};
 const toMinutes=t=>{const m=t.match(/(\d+):(\d+)\s(AM|PM)/);let h=Number(m[1])%12;if(m[3]==="PM")h+=12;return h*60+Number(m[2])};
-const today=new Date();today.setHours(0,0,0,0);
+let today=new Date();today.setHours(0,0,0,0);
 function dates(){return [0,1,2].map(i=>{const d=new Date(today);d.setDate(today.getDate()+i);return d})}
 function i18nDay(d){if(dateKey(d)===dateKey(today))return "HOY";const x=new Date(today);x.setDate(today.getDate()+1);return dateKey(d)===dateKey(x)?"MAÑANA":"PASADO MAÑANA"}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -137,7 +137,8 @@ function restoreBookingDraft(){
 $("client-name").addEventListener("input",saveBookingDraft);
 $("client-phone").addEventListener("input",saveBookingDraft);
 window.addEventListener("pagehide",saveBookingDraft);
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveBookingDraft()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveBookingDraft();else refreshCurrentDate()});
+window.addEventListener("focus",refreshCurrentDate);
 async function loadSlots(){
  if(!selectedDate)return;
  const requestedDate=selectedDate;
@@ -170,6 +171,17 @@ async function loadSlots(){
 function drawDates(){
  const wrap=$("dates");wrap.innerHTML="";
  dates().forEach(d=>{const k=dateKey(d),b=document.createElement("button");b.type="button";b.className="date-option"+(selectedDate===k?" selected":"");b.disabled=d.getDay()===0;b.innerHTML="<strong>"+i18nDay(d)+"</strong><span>"+labelDate(d)+"</span>";b.onclick=()=>{selectedDate=k;selectedTime="";saveBookingDraft();drawDates();loadSlots()};wrap.appendChild(b)});
+}
+function refreshCurrentDate(){
+ const current=new Date();current.setHours(0,0,0,0);
+ if(dateKey(current)===dateKey(today))return;
+ today.setTime(current.getTime());
+ if(selectedDate&&!dates().some(d=>dateKey(d)===selectedDate)){selectedDate="";selectedTime="";bookedSlots=[]}
+ drawDates();
+ if(!selectedDate){const next=dates().find(d=>d.getDay()!==0);if(next)selectedDate=dateKey(next)}
+ drawDates();drawTimes();saveBookingDraft();
+ if($("admin-date")){$("admin-date").min=dateKey(today);const last=new Date(today);last.setDate(last.getDate()+30);$("admin-date").max=dateKey(last)}
+ loadSlots();cacheUpcomingSlots();
 }
 function drawTimes(){
  const wrap=$("times");wrap.innerHTML="";
