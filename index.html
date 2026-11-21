@@ -145,7 +145,7 @@ async function loadSlots(){
  const requestId=++slotsRequestId;
  const requestedDate=selectedDate;
  const cacheKey="barnaguer-booked-slots-"+requestedDate;
- const readCache=()=>{try{return JSON.parse(localStorage.getItem(cacheKey)||"[]")}catch(error){return []}};
+ const readCache=()=>{try{const cached=JSON.parse(localStorage.getItem(cacheKey)||"[]");return Array.isArray(cached)?[...new Set(cached.filter(t=>TIMES.includes(t)))]:[]}catch(error){return []}};
  if(!db||!navigator.onLine){
   bookedSlots=readCache();
   availabilityIsStale=true;drawTimes();
@@ -160,7 +160,7 @@ async function loadSlots(){
   const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:requestedDate});
   if(error)throw error;
   if(requestId!==slotsRequestId||selectedDate!==requestedDate)return;
-  const freshSlots=(data||[]).map(x=>x.booking_time);
+  const freshSlots=[...new Set((data||[]).map(x=>x.booking_time).filter(t=>TIMES.includes(t)))];
   try{localStorage.setItem(cacheKey,JSON.stringify(freshSlots))}catch(storageError){}
   bookedSlots=freshSlots;
   availabilityIsStale=false;drawTimes();
