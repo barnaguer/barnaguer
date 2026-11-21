@@ -11,6 +11,23 @@ android {
         versionCode = 2
         versionName = "1.1"
     }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("BARNAGUER_KEYSTORE_PATH") ?: "release-key.p12")
+            storeType = "PKCS12"
+            storePassword = System.getenv("BARNAGUER_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("BARNAGUER_KEY_ALIAS")
+            keyPassword = System.getenv("BARNAGUER_KEY_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+        }
+    }
 }
 
 dependencies {
