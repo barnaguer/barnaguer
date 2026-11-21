@@ -89,6 +89,7 @@
   </div>
   <h3>Reservas registradas</h3>
   <input id="booking-search" class="client-search" type="search" placeholder="Buscar reserva por nombre o teléfono" aria-label="Buscar reservas por nombre o teléfono">
+  <select id="booking-status-filter" class="client-search" aria-label="Filtrar reservas por estado" style="margin-top:-4px"><option value="all">Mostrar todas las reservas</option><option value="confirmed">Solo confirmadas</option><option value="canceled">Solo canceladas</option></select>
   <div id="booking-list"></div>
   <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
   <div class="section-head"><h3>Historial de clientes</h3></div>
@@ -263,7 +264,7 @@ async function renderAdmin(){
   return a.booking_time.localeCompare(b.booking_time);
  });
  orderedBookings.forEach(x=>{
-  const item=document.createElement("div");item.className="booking";
+  const item=document.createElement("div");item.className="booking";item.dataset.status=x.status==="canceled"?"canceled":"confirmed";
   const info=document.createElement("div");
   info.innerHTML="<strong>"+esc(x.customer_name)+"</strong><small>"+esc(x.customer_phone)+" · "+labelDate(fromKey(x.booking_date))+" · "+esc(x.booking_time)+" · "+(x.status==="canceled"?'<span class="tag-canceled">Cancelado</span>':"Confirmado")+"</small>";
   const action=document.createElement("button");action.className="btn "+(x.status==="canceled"?"":"danger");action.type="button";action.textContent=x.status==="canceled"?"Reactivar":"Cancelar";
@@ -294,7 +295,12 @@ async function renderAdmin(){
 }
 function filterBookingList(){
  const query=($("booking-search").value||"").trim().toLowerCase();
- [...$("booking-list").children].forEach(item=>{item.hidden=!!query&&!item.textContent.toLowerCase().includes(query)});
+ const state=$("booking-status-filter").value;
+ [...$("booking-list").children].forEach(item=>{
+  const matchesText=!query||item.textContent.toLowerCase().includes(query);
+  const matchesState=state==="all"||item.dataset.status===state;
+  item.hidden=!(matchesText&&matchesState);
+ });
 }
 function allBookingsForClient(id){return cachedBookings.filter(b=>b.customer_id===id)}
  function clientCode(c){return "Clt-"+String(c.client_number).padStart(3,"0")+"-"+String(c.priority_rating??8).padStart(2,"0")}
@@ -511,6 +517,7 @@ $("admin-logout").onclick=async()=>{
 };
 $("client-search").addEventListener("input",drawClients);
 $("booking-search").addEventListener("input",filterBookingList);
+$("booking-status-filter").addEventListener("change",filterBookingList);
 
 $("brand-admin-access").onclick=()=>show("admin");$("tab-book").onclick=()=>show("book");$("tab-services").onclick=()=>show("services");
 $("new-booking").onclick=()=>{$("admin-form-wrap").classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{let d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("")};
