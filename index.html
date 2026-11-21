@@ -188,6 +188,7 @@ async function refreshCurrentDate(){
   if($("admin-date")){$("admin-date").min=dateKey(today);const last=new Date(today);last.setDate(last.getDate()+30);$("admin-date").max=dateKey(last)}
   await loadSlots();
   await cacheUpcomingSlots();
+  if(adminSession)await renderAdmin();
  }finally{
   refreshCurrentDate.running=false;
  }
