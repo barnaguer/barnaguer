@@ -413,6 +413,11 @@ function drawClients(){
   const card=document.createElement("div");card.className="client-card";
   const visits=allBookingsForClient(c.id);
   card.innerHTML="<strong>"+esc(clientLabel(c))+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
+  const activeVisits=visits.filter(v=>v.status!=="canceled"),todayKey=dateKey(today);
+  const nextVisit=activeVisits.filter(v=>v.booking_date>=todayKey).sort((a,b)=>(a.booking_date+a.booking_time).localeCompare(b.booking_date+b.booking_time))[0];
+  const lastVisit=activeVisits.sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time))[0];
+  if(nextVisit)card.innerHTML+="<small><strong>Próximo turno:</strong> "+labelDate(fromKey(nextVisit.booking_date))+" · "+esc(nextVisit.booking_time)+"</small>";
+  else if(lastVisit)card.innerHTML+="<small><strong>Último turno:</strong> "+labelDate(fromKey(lastVisit.booking_date))+" · "+esc(lastVisit.booking_time)+"</small>";
   const actions=document.createElement("div");actions.className="client-actions";
   const phoneDigits=String(c.customer_phone||"").replace(/\\D/g,"");
   if(phoneDigits){const whatsappBtn=document.createElement("a");whatsappBtn.className="btn";whatsappBtn.textContent="WhatsApp";whatsappBtn.href="https://wa.me/"+phoneDigits+"?text="+encodeURIComponent("Hola "+clientLabel(c)+", te contacto desde BARNAGUER.");whatsappBtn.target="_blank";whatsappBtn.rel="noopener noreferrer";actions.appendChild(whatsappBtn)}
