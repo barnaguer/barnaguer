@@ -450,7 +450,7 @@ $("booking-form").addEventListener("submit",async e=>{
  try{
   const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:selectedDate,booking_time:selectedTime});
   if(error){
-   if(error.code==="23505"){status("booking-status","Ese horario acaba de ser reservado. Elige otro.");await loadSlots()}
+   if(error.code==="23505"){selectedTime="";saveBookingDraft();status("booking-status","Ese horario acaba de ser reservado. Elige otro.");await loadSlots()}
    else if(error.code==="P0001"&&/bloqueado/i.test(error.message||""))status("booking-status","No es posible realizar esta reserva, llame o escriba al +53 5478 9515");
    else status("booking-status","No se pudo registrar la reserva. Inténtalo de nuevo.");
    return;
