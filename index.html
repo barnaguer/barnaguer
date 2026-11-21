@@ -212,7 +212,8 @@ async function cacheUpcomingSlots(){
    try{
     const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:key});
     if(error||!navigator.onLine)return;
-    localStorage.setItem(cacheKey,JSON.stringify((data||[]).map(x=>x.booking_time)));
+    const freshSlots=[...new Set((data||[]).map(x=>x.booking_time).filter(t=>TIMES.includes(t)))];
+    localStorage.setItem(cacheKey,JSON.stringify(freshSlots));
    }catch(error){}
   }));
  }finally{
