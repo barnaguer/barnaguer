@@ -127,10 +127,10 @@ function restoreBookingDraft(){
  try{
   const draft=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null");
   if(!draft)return;
-  $("client-name").value=draft.name||"";
-  $("client-phone").value=draft.phone||"";
-  if(draft.date&&dates().some(d=>dateKey(d)===draft.date)&&fromKey(draft.date).getDay()!==0){
-   selectedDate=draft.date;selectedTime=TIMES.includes(draft.time)?draft.time:"";
+  $("client-name").value=typeof draft.name==="string"?draft.name.slice(0,80):"";
+  $("client-phone").value=typeof draft.phone==="string"?draft.phone.slice(0,30):"";
+  if(typeof draft.date==="string"&&dates().some(d=>dateKey(d)===draft.date)&&fromKey(draft.date).getDay()!==0){
+   selectedDate=draft.date;selectedTime=typeof draft.time==="string"&&TIMES.includes(draft.time)?draft.time:"";
    drawDates();drawTimes();
   }
  }catch(error){}
