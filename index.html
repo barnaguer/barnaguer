@@ -410,7 +410,7 @@ async function init(){
  if(!db){availabilityIsStale=true;$("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";if(window.location.hash==="#admin")show("admin");return}
  try{const {data}=await db.auth.getSession();adminSession=data.session;updateAdminView()}catch(error){}
  await loadSlots();
- await cacheUpcomingSlots();
+ cacheUpcomingSlots();
  if(window.location.hash==="#admin")show("admin");
 }
 init();
