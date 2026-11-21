@@ -404,14 +404,14 @@ window.addEventListener("online",async()=>{
   status("booking-status","Ese horario ya no está disponible. Selecciona otro para continuar.");
  }
 });
-async function init(){
+function init(){
  restoreBookingDraft();drawDates();updateAdminView();
  if(!selectedDate){const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();drawTimes()}}
- if(!db){availabilityIsStale=true;$("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";if(window.location.hash==="#admin")show("admin");return}
- try{const {data}=await db.auth.getSession();adminSession=data.session;updateAdminView()}catch(error){}
- await loadSlots();
- cacheUpcomingSlots();
  if(window.location.hash==="#admin")show("admin");
+ if(!db){availabilityIsStale=true;$("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";return}
+ db.auth.getSession().then(({data})=>{adminSession=data.session;updateAdminView()}).catch(()=>{});
+ loadSlots();
+ cacheUpcomingSlots();
 }
 init();
 })();
