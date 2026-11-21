@@ -428,6 +428,7 @@ function drawClients(){
   const phoneDigits=String(c.customer_phone||"").replace(/\\D/g,"");
   if(phoneDigits){const whatsappBtn=document.createElement("a");whatsappBtn.className="btn";whatsappBtn.textContent="WhatsApp";whatsappBtn.href="https://wa.me/"+phoneDigits+"?text="+encodeURIComponent("Hola "+clientLabel(c)+", te contacto desde BARNAGUER.");whatsappBtn.target="_blank";whatsappBtn.rel="noopener noreferrer";actions.appendChild(whatsappBtn)}
   const btn=document.createElement("button");btn.type="button";btn.className="btn";btn.textContent="Ver historial";btn.onclick=()=>showClientHistory(c);
+  const rebookBtn=document.createElement("button");rebookBtn.type="button";rebookBtn.className="btn";rebookBtn.textContent="Registrar nuevo turno";rebookBtn.onclick=()=>{const wrap=$("admin-form-wrap");$("admin-form").reset();$("admin-name").value=c.customer_name||"";$("admin-phone").value=c.customer_phone||"";wrap.classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{const d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("");wrap.scrollIntoView({behavior:"smooth",block:"start"});};
   const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn"+(c.google_contact_saved?" saved":"");contactBtn.textContent=c.google_contact_saved?"Guardado en Google":"Guardar contacto";contactBtn.disabled=!!c.google_contact_saved;
   const contactStatus=document.createElement("small");contactStatus.className="note";contactStatus.setAttribute("aria-live","polite");
   contactBtn.onclick=()=>saveClientToGoogle(c,contactBtn,contactStatus);
@@ -446,7 +447,7 @@ function drawClients(){
    alert("No se pudo actualizar la calificación: "+(error.message||"Comprueba tu conexión e inténtalo de nuevo."));
    ratingSelect.value=String(previous);ratingSelect.disabled=false;
   }
- };ratingWrap.appendChild(ratingSelect);actions.append(btn,contactBtn);card.appendChild(actions);card.appendChild(ratingWrap);card.appendChild(contactStatus);wrap.appendChild(card);
+ };ratingWrap.appendChild(ratingSelect);actions.append(btn,rebookBtn,contactBtn);card.appendChild(actions);card.appendChild(ratingWrap);card.appendChild(contactStatus);wrap.appendChild(card);
  });
 }
 function showClientHistory(c){
