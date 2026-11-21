@@ -12,7 +12,7 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    private static final String CHANNEL = "barnaguer_turn_alarms";
+    private static final String CHANNEL = "barnaguer_turn_alarms_v2";
 
     @Override public void onReceive(Context context, Intent intent) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -24,7 +24,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 channel = new NotificationChannel(CHANNEL, "Alarmas de turnos BARNAGUER", NotificationManager.IMPORTANCE_HIGH);
                 channel.setDescription("Avisos un minuto antes de cada turno");
                 channel.enableVibration(true);
-                channel.setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI,
+                channel.setSound(android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI,
                     new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build());
                 manager.createNotificationChannel(channel);
             }
