@@ -398,11 +398,17 @@ $("booking-form").addEventListener("submit",async e=>{
  }
 });
 $("admin-login-form").addEventListener("submit",async e=>{
- e.preventDefault();if(!db||!navigator.onLine){status("admin-login-status","No hay conexión a Internet. Conéctate para acceder a la administración.");return}const btn=$("admin-login-submit");btn.disabled=true;btn.textContent="Ingresando...";
- const {data,error}=await db.auth.signInWithPassword({email:$("admin-email").value.trim(),password:$("admin-password").value});
- btn.disabled=false;btn.textContent="Iniciar sesión";
- if(error){status("admin-login-status","No se pudo iniciar sesión. Verifica el correo y la contraseña.");return}
- adminSession=data.session;status("admin-login-status","");updateAdminView();
+ e.preventDefault();if(!db||!navigator.onLine){status("admin-login-status","No hay conexión a Internet. Conéctate para acceder a la administración.");return}
+ const btn=$("admin-login-submit");if(btn.disabled)return;btn.disabled=true;btn.textContent="Ingresando...";
+ try{
+  const {data,error}=await db.auth.signInWithPassword({email:$("admin-email").value.trim(),password:$("admin-password").value});
+  if(error){status("admin-login-status","No se pudo iniciar sesión. Verifica el correo y la contraseña.");return}
+  adminSession=data.session;status("admin-login-status","");updateAdminView();
+ }catch(error){
+  status("admin-login-status","No se pudo completar el acceso. Comprueba tu conexión e inténtalo de nuevo.");
+ }finally{
+  btn.disabled=false;btn.textContent="Iniciar sesión";
+ }
 });
 $("admin-logout").onclick=async()=>{await db.auth.signOut();adminSession=null;updateAdminView()};
 $("client-search").addEventListener("input",drawClients);
