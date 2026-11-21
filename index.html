@@ -136,6 +136,8 @@ function restoreBookingDraft(){
 }
 $("client-name").addEventListener("input",saveBookingDraft);
 $("client-phone").addEventListener("input",saveBookingDraft);
+window.addEventListener("pagehide",saveBookingDraft);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveBookingDraft()});
 async function loadSlots(){
  if(!selectedDate)return;
  const requestedDate=selectedDate;
