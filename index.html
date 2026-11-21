@@ -87,7 +87,9 @@
     <button class="btn primary" type="submit">Guardar turno</button> <button class="btn" id="close-admin-form" type="button">Cancelar</button>
    </form><hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
   </div>
-  <h3>Reservas registradas</h3><div id="booking-list"></div>
+  <h3>Reservas registradas</h3>
+  <input id="booking-search" class="client-search" type="search" placeholder="Buscar reserva por nombre o teléfono" aria-label="Buscar reservas por nombre o teléfono">
+  <div id="booking-list"></div>
   <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
   <div class="section-head"><h3>Historial de clientes</h3></div>
   <p class="note">Puedes preparar individualmente el contacto de cada cliente y guardarlo en tu cuenta de Google.</p>
@@ -279,7 +281,12 @@ async function renderAdmin(){
   };
   item.append(info,action);list.appendChild(item);
  });
+ filterBookingList();
  drawClients();
+}
+function filterBookingList(){
+ const query=($("booking-search").value||"").trim().toLowerCase();
+ [...$("booking-list").children].forEach(item=>{item.hidden=!!query&&!item.textContent.toLowerCase().includes(query)});
 }
 function allBookingsForClient(id){return cachedBookings.filter(b=>b.customer_id===id)}
  function clientCode(c){return "Clt-"+String(c.client_number).padStart(3,"0")+"-"+String(c.priority_rating??8).padStart(2,"0")}
@@ -495,6 +502,7 @@ $("admin-logout").onclick=async()=>{
  }
 };
 $("client-search").addEventListener("input",drawClients);
+$("booking-search").addEventListener("input",filterBookingList);
 
 $("brand-admin-access").onclick=()=>show("admin");$("tab-book").onclick=()=>show("book");$("tab-services").onclick=()=>show("services");
 $("new-booking").onclick=()=>{$("admin-form-wrap").classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{let d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("")};
