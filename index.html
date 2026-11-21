@@ -172,16 +172,24 @@ function drawDates(){
  const wrap=$("dates");wrap.innerHTML="";
  dates().forEach(d=>{const k=dateKey(d),b=document.createElement("button");b.type="button";b.className="date-option"+(selectedDate===k?" selected":"");b.disabled=d.getDay()===0;b.innerHTML="<strong>"+i18nDay(d)+"</strong><span>"+labelDate(d)+"</span>";b.onclick=()=>{selectedDate=k;selectedTime="";saveBookingDraft();drawDates();loadSlots()};wrap.appendChild(b)});
 }
-function refreshCurrentDate(){
- const current=new Date();current.setHours(0,0,0,0);
- if(dateKey(current)===dateKey(today))return;
- today.setTime(current.getTime());
- if(selectedDate&&!dates().some(d=>dateKey(d)===selectedDate)){selectedDate="";selectedTime="";bookedSlots=[]}
- drawDates();
- if(!selectedDate){const next=dates().find(d=>d.getDay()!==0);if(next)selectedDate=dateKey(next)}
- drawDates();drawTimes();saveBookingDraft();
- if($("admin-date")){$("admin-date").min=dateKey(today);const last=new Date(today);last.setDate(last.getDate()+30);$("admin-date").max=dateKey(last)}
- loadSlots();cacheUpcomingSlots();
+async function refreshCurrentDate(){
+ if(refreshCurrentDate.running)return;
+ refreshCurrentDate.running=true;
+ try{
+  const current=new Date();current.setHours(0,0,0,0);
+  const changed=dateKey(current)!==dateKey(today);
+  if(changed){
+   today.setTime(current.getTime());
+   if(selectedDate&&!dates().some(d=>dateKey(d)===selectedDate)){selectedDate="";selectedTime="";bookedSlots=[]}
+  }
+  if(!selectedDate){const next=dates().find(d=>d.getDay()!==0);if(next)selectedDate=dateKey(next)}
+  drawDates();drawTimes();saveBookingDraft();
+  if($("admin-date")){$("admin-date").min=dateKey(today);const last=new Date(today);last.setDate(last.getDate()+30);$("admin-date").max=dateKey(last)}
+  await loadSlots();
+  await cacheUpcomingSlots();
+ }finally{
+  refreshCurrentDate.running=false;
+ }
 }
 function drawTimes(){
  const wrap=$("times");wrap.innerHTML="";
