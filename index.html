@@ -76,7 +76,7 @@
  </section>
  <section id="admin-content" class="panel hidden">
   <div class="section-head"><h3>Panel de administración</h3><div class="admin-actions"><button class="btn" id="new-booking" type="button">Registrar cliente</button><button class="btn" id="admin-logout" type="button">Cerrar sesión</button></div></div>
-  <div class="admin-grid"><div class="stat"><span>Turnos registrados</span><strong id="stat-total">0</strong></div><div class="stat"><span>Turnos de hoy</span><strong id="stat-today">0</strong></div><div class="stat"><span>Próximos espacios libres</span><strong id="stat-free">0</strong></div></div>
+  <div class="admin-grid"><div class="stat"><span>Turnos registrados</span><strong id="stat-total">0</strong></div><div class="stat"><span>Turnos de hoy</span><strong id="stat-today">0</strong></div><div class="stat"><span>Clientes registrados</span><strong id="stat-clients">0</strong></div><div class="stat"><span>Próximos espacios libres</span><strong id="stat-free">0</strong></div></div>
   <div id="admin-form-wrap" class="hidden">
    <h3>Registrar turno manualmente</h3>
    <form id="admin-form">
@@ -247,6 +247,7 @@ async function renderAdmin(){
  if(clientResult.error){$("client-list").textContent="No se pudo cargar el historial de clientes: "+clientResult.error.message;return}
  const all=bookingResult.data||[],todayKey=dateKey(today);
  cachedBookings=all;allClients=clientResult.data||[];
+ $("stat-clients").textContent=allClients.length;
  const confirmed=all.filter(x=>x.status!=="canceled");
  $("stat-total").textContent=confirmed.length;
  $("stat-today").textContent=confirmed.filter(x=>x.booking_date===todayKey).length;
