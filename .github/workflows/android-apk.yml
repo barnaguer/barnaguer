@@ -55,7 +55,7 @@ jobs:
           echo "$KEYSTORE" | base64 --decode > android/release-key.p12
       - name: Build signed release APK
         env:
-          BARNAGUER_KEYSTORE_PATH: release-key.p12
+          BARNAGUER_KEYSTORE_PATH: ../release-key.p12
           BARNAGUER_KEYSTORE_PASSWORD: ${{ secrets.BARNAGUER_KEYSTORE_PASSWORD }}
           BARNAGUER_KEY_ALIAS: ${{ secrets.BARNAGUER_KEY_ALIAS }}
           BARNAGUER_KEY_PASSWORD: ${{ secrets.BARNAGUER_KEY_PASSWORD }}
