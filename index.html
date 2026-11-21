@@ -248,6 +248,10 @@ function syncTurnAlarms(bookings){
   $("alarm-status").textContent="Alarmas desactivadas.";
   return;
  }
+ if(!native.hasNotificationPermission()){
+  $("alarm-status").textContent="Activa las notificaciones de BARNAGUER para recibir las alarmas.";
+  return;
+ }
  if(!native.hasExactAlarmPermission()){
   $("alarm-status").textContent="Autoriza las alarmas exactas en Android para poder programarlas.";
   return;
@@ -599,6 +603,11 @@ $("booking-status-filter").addEventListener("change",filterBookingList);
 $("alarm-enabled").addEventListener("change",()=>{
  if($("alarm-enabled").checked){
   localStorage.setItem(ALARM_PREF_KEY,"true");
+  if(!window.BarnaguerNative.hasNotificationPermission()){
+   $("alarm-status").textContent="Se solicitará permiso para mostrar las alarmas de BARNAGUER.";
+   window.BarnaguerNative.requestNotificationPermission();
+   return;
+  }
   if(!window.BarnaguerNative.hasExactAlarmPermission()){
    $("alarm-status").textContent="Se abrirán los ajustes de Android para autorizar las alarmas exactas.";
    window.BarnaguerNative.requestExactAlarmPermission();
