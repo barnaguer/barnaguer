@@ -196,10 +196,17 @@ async function cacheUpcomingSlots(){
 async function renderAdmin(){
  if(!adminSession)return;
  $("booking-list").innerHTML='<div class="empty">Cargando reservas...</div>';
- const [bookingResult,clientResult]=await Promise.all([
-  db.from("bookings").select("*").order("booking_date").order("booking_time"),
-  db.from("clients").select("*").order("customer_name")
- ]);
+ let bookingResult,clientResult;
+ try{
+  [bookingResult,clientResult]=await Promise.all([
+   db.from("bookings").select("*").order("booking_date").order("booking_time"),
+   db.from("clients").select("*").order("customer_name")
+  ]);
+ }catch(error){
+  $("booking-list").textContent="No se pudieron cargar las reservas. Comprueba tu conexión e inténtalo de nuevo.";
+  $("client-list").textContent="No se pudo cargar el historial de clientes.";
+  return;
+ }
  if(bookingResult.error){$("booking-list").textContent="No se pudieron cargar las reservas: "+bookingResult.error.message;return}
  if(clientResult.error){$("client-list").textContent="No se pudo cargar el historial de clientes: "+clientResult.error.message;return}
  const all=bookingResult.data||[],todayKey=dateKey(today);
