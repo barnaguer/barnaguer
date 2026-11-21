@@ -376,9 +376,18 @@ $("admin-form").addEventListener("submit",async e=>{
  if(error){alert(error.code==="23505"?"Ese horario ya está reservado.":error.code==="P0001"&&/bloqueado/i.test(error.message||"")?"No es posible realizar esta reserva, llame o escriba al +53 5478 9515":"No se pudo guardar el turno: "+error.message);return}
  $("admin-form").reset();$("admin-form-wrap").classList.add("hidden");await renderAdmin();if(selectedDate===date)await loadSlots();
 });
+window.addEventListener("online",async()=>{
+ if(!selectedDate)return;
+ $("availability-note").textContent="Conexión restablecida. Comprobando disponibilidad...";
+ await loadSlots();
+ if(selectedTime&&bookedSlots.includes(selectedTime)){
+  selectedTime="";saveBookingDraft();drawTimes();
+  status("booking-status","Ese horario ya no está disponible. Selecciona otro para continuar.");
+ }
+});
 async function init(){
  restoreBookingDraft();drawDates();updateAdminView();
- const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();drawTimes()}
+ if(!selectedDate){const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();drawTimes()}}
  if(!db){availabilityIsStale=true;$("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";if(window.location.hash==="#admin")show("admin");return}
  try{const {data}=await db.auth.getSession();adminSession=data.session;updateAdminView()}catch(error){}
  await loadSlots();
