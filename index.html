@@ -371,13 +371,28 @@ function updateAdminView(){
 $("booking-form").addEventListener("submit",async e=>{
  e.preventDefault();
  if(!selectedDate||!selectedTime){status("booking-status","Selecciona un día y un horario antes de confirmar.");return}
-  if(!db||!navigator.onLine){status("booking-status","Sin conexión: no se puede confirmar la reserva. Conéctate a Internet o contacta por WhatsApp.");return}
+ if(!db||!navigator.onLine){status("booking-status","Sin conexión: no se puede confirmar la reserva. Conéctate a Internet o contacta por WhatsApp.");return}
  const name=$("client-name").value.trim(),phone=$("client-phone").value.trim();
  if(!name||!phone)return;
- const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:selectedDate,booking_time:selectedTime});
- if(error){if(error.code==="23505"){status("booking-status","Ese horario acaba de ser reservado. Elige otro.");await loadSlots()}else if(error.code==="P0001"&&/bloqueado/i.test(error.message||"")){status("booking-status","No es posible realizar esta reserva, llame o escriba al +53 5478 9515")}else status("booking-status","No se pudo registrar la reserva. Inténtalo de nuevo.");return}
- status("booking-status","¡Tu turno quedó registrado! Te esperamos en BARNAGUER.");
- $("booking-form").reset();selectedTime="";try{localStorage.removeItem(DRAFT_KEY)}catch(storageError){}await loadSlots();
+ const submitButton=$("booking-form").querySelector('button[type="submit"]');
+ if(submitButton.disabled)return;
+ submitButton.disabled=true;submitButton.textContent="Confirmando...";
+ try{
+  const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:selectedDate,booking_time:selectedTime});
+  if(error){
+   if(error.code==="23505"){status("booking-status","Ese horario acaba de ser reservado. Elige otro.");await loadSlots()}
+   else if(error.code==="P0001"&&/bloqueado/i.test(error.message||""))status("booking-status","No es posible realizar esta reserva, llame o escriba al +53 5478 9515");
+   else status("booking-status","No se pudo registrar la reserva. Inténtalo de nuevo.");
+   return;
+  }
+  status("booking-status","¡Tu turno quedó registrado! Te esperamos en BARNAGUER.");
+  $("booking-form").reset();selectedTime="";try{localStorage.removeItem(DRAFT_KEY)}catch(storageError){}
+  await loadSlots();
+ }catch(error){
+  status("booking-status","No se pudo completar la reserva. Comprueba tu conexión e inténtalo de nuevo.");
+ }finally{
+  submitButton.disabled=false;submitButton.textContent="Confirmar reserva";
+ }
 });
 $("admin-login-form").addEventListener("submit",async e=>{
  e.preventDefault();if(!db||!navigator.onLine){status("admin-login-status","No hay conexión a Internet. Conéctate para acceder a la administración.");return}const btn=$("admin-login-submit");btn.disabled=true;btn.textContent="Ingresando...";
