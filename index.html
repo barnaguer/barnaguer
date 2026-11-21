@@ -413,6 +413,8 @@ function drawClients(){
   const visits=allBookingsForClient(c.id);
   card.innerHTML="<strong>"+esc(clientLabel(c))+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
   const actions=document.createElement("div");actions.className="client-actions";
+  const phoneDigits=String(c.customer_phone||"").replace(/\\D/g,"");
+  if(phoneDigits){const whatsappBtn=document.createElement("a");whatsappBtn.className="btn";whatsappBtn.textContent="WhatsApp";whatsappBtn.href="https://wa.me/"+phoneDigits+"?text="+encodeURIComponent("Hola "+clientLabel(c)+", te contacto desde BARNAGUER.");whatsappBtn.target="_blank";whatsappBtn.rel="noopener noreferrer";actions.appendChild(whatsappBtn)}
   const btn=document.createElement("button");btn.type="button";btn.className="btn";btn.textContent="Ver historial";btn.onclick=()=>showClientHistory(c);
   const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn"+(c.google_contact_saved?" saved":"");contactBtn.textContent=c.google_contact_saved?"Guardado en Google":"Guardar contacto";contactBtn.disabled=!!c.google_contact_saved;
   const contactStatus=document.createElement("small");contactStatus.className="note";contactStatus.setAttribute("aria-live","polite");
