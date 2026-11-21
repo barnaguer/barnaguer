@@ -92,7 +92,7 @@
   <select id="booking-status-filter" class="client-search" aria-label="Filtrar reservas por estado" style="margin-top:-4px"><option value="all">Mostrar todas las reservas</option><option value="confirmed">Solo confirmadas</option><option value="canceled">Solo canceladas</option></select>
   <div id="booking-list"></div>
   <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
-  <div class="section-head"><h3>Historial de clientes</h3></div>
+  <div class="section-head"><h3>Historial de clientes</h3><button id="export-clients" class="btn" type="button">Exportar clientes</button></div>
   <p class="note">Puedes preparar individualmente el contacto de cada cliente y guardarlo en tu cuenta de Google.</p>
   <input id="client-search" class="client-search" type="search" placeholder="Buscar por código, nombre o teléfono">
   <select id="client-rating-filter" class="client-search" aria-label="Filtrar clientes por clasificación" style="margin-top:-4px"><option value="all">Mostrar todos los clientes</option><option value="10">Clasificación 10</option><option value="9">Clasificación 09</option><option value="8">Clasificación 08</option><option value="7">Bloqueados (07)</option></select>
@@ -405,6 +405,27 @@ function requestGoogleForRating(client,button,status){
   googleTokenClient.requestAccessToken({prompt:""});
  }catch(error){status.textContent="Clasificación guardada en BARNAGUER, pero no se pudo iniciar Google: "+error.message;button.disabled=false}
 }
+function exportClientsCsv(){
+ if(!adminSession)return;
+ const csvCell=value=>{
+  let text=String(value??"");
+  if(/^[=+\\-@\\t\\r]/.test(text))text="'"+text;
+  return '"'+text.replace(/"/g,'""')+'"';
+ };
+ const rows=[["Código","Nombre","Teléfono","Clasificación","Turnos confirmados","Registros en historial","Próximo turno","Último turno"]];
+ const todayKey=dateKey(today);
+ allClients.forEach(client=>{
+  const visits=allBookingsForClient(client.id);
+  const active=visits.filter(v=>v.status!=="canceled");
+  const upcoming=active.filter(v=>v.booking_date>=todayKey).sort((a,b)=>(a.booking_date+a.booking_time).localeCompare(b.booking_date+b.booking_time))[0];
+  const latest=active.slice().sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time))[0];
+  const rating=Number(client.priority_rating??8);
+  rows.push([clientCode(client),client.customer_name,client.customer_phone,rating===7?"07 - Bloqueado":String(rating).padStart(2,"0"),active.length,visits.length,upcoming?upcoming.booking_date+" "+upcoming.booking_time:"",latest?latest.booking_date+" "+latest.booking_time:""]);
+ });
+ const csv="\\uFEFF"+rows.map(row=>row.map(csvCell).join(";")).join("\\r\\n");
+ const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));
+ const link=document.createElement("a");link.href=url;link.download="BARNAGUER-clientes-"+dateKey(today)+".csv";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
 function drawClients(){
  const q=($("client-search").value||"").trim().toLowerCase(),rating=$("client-rating-filter").value,wrap=$("client-list");
  const visible=allClients.filter(c=>(clientLabel(c)+" "+c.customer_phone).toLowerCase().includes(q)&&(rating==="all"||Number(c.priority_rating??8)===Number(rating)));
@@ -535,6 +556,7 @@ $("admin-logout").onclick=async()=>{
   btn.disabled=false;btn.textContent="Cerrar sesión";
  }
 };
+$("export-clients").addEventListener("click",exportClientsCsv);
 $("client-search").addEventListener("input",drawClients);
 $("client-rating-filter").addEventListener("change",drawClients);
 $("client-sort").addEventListener("change",drawClients);
