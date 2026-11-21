@@ -466,7 +466,10 @@ $("admin-form").addEventListener("submit",async e=>{
  e.preventDefault();const form=e.currentTarget,date=$("admin-date").value,time=$("admin-time").value;
  if(!db||!navigator.onLine){alert("Sin conexión a Internet. El turno no se ha guardado. Recupera la conexión e inténtalo de nuevo.");return}
  if(!$("admin-name").value.trim()||!$("admin-phone").value.trim()){alert("Introduce el nombre y el teléfono del cliente.");return}
- if(!date||fromKey(date).getDay()===0){alert("Los domingos la barbería permanece cerrada.");return}
+ const lastAllowed=new Date(today);lastAllowed.setDate(lastAllowed.getDate()+30);
+ if(!date||date<dateKey(today)||date>dateKey(lastAllowed)){alert("Selecciona una fecha entre hoy y los próximos 30 días.");return}
+ if(fromKey(date).getDay()===0){alert("Los domingos la barbería permanece cerrada.");return}
+ if(!TIMES.includes(time)){alert("Selecciona un horario válido.");return}
  const submitButton=form.querySelector('button[type="submit"]');if(submitButton?.disabled)return;
  const originalText=submitButton?.textContent;if(submitButton){submitButton.disabled=true;submitButton.textContent="Guardando..."}
  try{
