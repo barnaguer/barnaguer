@@ -468,18 +468,19 @@ $("booking-form").addEventListener("submit",async e=>{
  if(!db||!navigator.onLine){status("booking-status","Sin conexión: no se puede confirmar la reserva. Conéctate a Internet o contacta por WhatsApp.");return}
  const name=$("client-name").value.trim(),phone=$("client-phone").value.trim();
  if(!name||!phone)return;
+ const bookingDate=selectedDate,bookingTime=selectedTime;
  const submitButton=$("booking-form").querySelector('button[type="submit"]');
  if(submitButton.disabled)return;
  submitButton.disabled=true;submitButton.textContent="Confirmando...";
  try{
-  const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:selectedDate,booking_time:selectedTime});
+  const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:bookingDate,booking_time:bookingTime});
   if(error){
    if(error.code==="23505"){selectedTime="";saveBookingDraft();status("booking-status","Ese horario acaba de ser reservado. Elige otro.");await loadSlots()}
    else if(error.code==="P0001"&&/bloqueado/i.test(error.message||""))status("booking-status","No es posible realizar esta reserva, llame o escriba al +53 5478 9515");
    else status("booking-status","No se pudo registrar la reserva. Inténtalo de nuevo.");
    return;
   }
-  status("booking-status","¡Tu turno quedó registrado! Te esperamos en BARNAGUER.");
+  status("booking-status","¡Tu turno quedó registrado para el "+labelDate(fromKey(bookingDate))+" a las "+bookingTime+". Te esperamos en BARNAGUER.");
   $("booking-form").reset();selectedTime="";try{localStorage.removeItem(DRAFT_KEY)}catch(storageError){}
   loadSlots();
   cacheUpcomingSlots();
