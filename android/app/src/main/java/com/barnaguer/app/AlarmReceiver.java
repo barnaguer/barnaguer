@@ -6,6 +6,11 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import android.media.AudioAttributes;
 import android.net.Uri;
 import android.os.Build;
@@ -13,6 +18,19 @@ import androidx.core.app.NotificationCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
     private static final String CHANNEL = "barnaguer_turn_alarms_v2";
+
+    private Bitmap loadEmblem(Context context) {
+        try (InputStream input = context.getAssets().open("barnaguer-emblem.jpg.b64");
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int count;
+            while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            byte[] image = Base64.decode(output.toByteArray(), Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(image, 0, image.length);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
 
     @Override public void onReceive(Context context, Intent intent) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -36,11 +54,15 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         String title = intent.getStringExtra("title");
         String message = intent.getStringExtra("message");
+        Bitmap emblem = loadEmblem(context);
         NotificationCompat.Builder notification = new NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle(title == null ? "BARNAGUER" : title)
             .setContentText(message == null ? "Próximo turno" : message)
-            .setStyle(new NotificationCompat.BigTextStyle().bigText(message == null ? "Próximo turno" : message))
+            .setStyle(emblem != null
+                ? new NotificationCompat.BigPictureStyle().bigPicture(emblem).bigLargeIcon((Bitmap) null).setSummaryText(message == null ? "Próximo turno" : message)
+                : new NotificationCompat.BigTextStyle().bigText(message == null ? "Próximo turno" : message))
+            .setLargeIcon(emblem)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
