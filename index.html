@@ -77,6 +77,10 @@
  <section id="admin-content" class="panel hidden">
   <div class="section-head"><h3>Panel de administración</h3><div class="admin-actions"><button class="btn" id="new-booking" type="button">Registrar cliente</button><button class="btn" id="admin-logout" type="button">Cerrar sesión</button></div></div>
   <div class="admin-grid"><div class="stat"><span>Turnos registrados</span><strong id="stat-total">0</strong></div><div class="stat"><span>Turnos de hoy</span><strong id="stat-today">0</strong></div><div class="stat"><span>Clientes registrados</span><strong id="stat-clients">0</strong></div><div class="stat"><span>Próximos espacios libres</span><strong id="stat-free">0</strong></div></div>
+  <div id="alarm-controls" class="stat" style="margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+   <div><strong>Alarmas de turnos</strong><p class="note" id="alarm-status" style="margin:5px 0 0">Recibe un aviso sonoro un minuto antes de cada turno.</p></div>
+   <label style="display:flex;align-items:center;gap:9px;font-weight:600"><input id="alarm-enabled" type="checkbox"> Activar alarmas</label>
+  </div>
   <div id="admin-form-wrap" class="hidden">
    <h3>Registrar turno manualmente</h3>
    <form id="admin-form">
@@ -229,6 +233,56 @@ async function cacheUpcomingSlots(){
   }
  }
 }
+const ALARM_PREF_KEY="barnaguer-turn-alarms-enabled";
+function updateAlarmControls(){
+ const controls=$("alarm-controls");
+ if(!controls)return;
+ controls.classList.toggle("hidden",!window.BarnaguerNative);
+ $("alarm-enabled").checked=localStorage.getItem(ALARM_PREF_KEY)==="true";
+}
+function syncTurnAlarms(bookings){
+ const native=window.BarnaguerNative;
+ if(!native)return;
+ if(localStorage.getItem(ALARM_PREF_KEY)!=="true"){
+  native.cancelAlarms();
+  $("alarm-status").textContent="Alarmas desactivadas.";
+  return;
+ }
+ if(!native.hasExactAlarmPermission()){
+  $("alarm-status").textContent="Autoriza las alarmas exactas en Android para poder programarlas.";
+  return;
+ }
+ const grouped=new Map();
+ (bookings||[]).filter(x=>x.status!=="canceled").forEach(x=>{
+  const parts=String(x.booking_date||"").split("-").map(Number);
+  const minutes=toMinutes(x.booking_time);
+  if(parts.length!==3||parts.some(n=>!Number.isFinite(n))||!Number.isFinite(minutes))return;
+  const startAt=new Date(parts[0],parts[1]-1,parts[2],0,minutes,0,0).getTime();
+  if(!Number.isFinite(startAt))return;
+  if(!grouped.has(x.booking_date))grouped.set(x.booking_date,[]);
+  grouped.get(x.booking_date).push({booking:x,startAt});
+ });
+ const alarms=[];
+ const ordinals=["1er","2do","3er","4to","5to"];
+ grouped.forEach(items=>{
+  items.sort((a,b)=>a.startAt-b.startAt);
+  items.forEach((entry,index)=>{
+   const triggerAt=entry.startAt-60000;
+   if(triggerAt<=Date.now())return;
+   const b=entry.booking;
+   alarms.push({
+    id:String(b.id),
+    triggerAt,
+    title:(ordinals[index]||String(index+1)+"º")+" Turno",
+    message:"Comienza a las "+b.booking_time+" · "+labelDate(fromKey(b.booking_date))
+   });
+  });
+ });
+ const ok=native.scheduleAlarms(JSON.stringify(alarms));
+ $("alarm-status").textContent=ok
+  ? alarms.length+" alarmas programadas. Sonarán un minuto antes de cada turno."
+  : "No se pudieron programar las alarmas. Revisa los permisos de Android.";
+}
 async function renderAdmin(){
  if(!adminSession)return;
  const requestId=++adminRenderRequest;
@@ -250,6 +304,7 @@ async function renderAdmin(){
  if(clientResult.error){$("client-list").textContent="No se pudo cargar el historial de clientes: "+clientResult.error.message;return}
  const all=bookingResult.data||[],todayKey=dateKey(today);
  cachedBookings=all;allClients=clientResult.data||[];
+ updateAlarmControls();syncTurnAlarms(all);
  $("stat-clients").textContent=allClients.length;
  const confirmed=all.filter(x=>x.status!=="canceled");
  $("stat-total").textContent=confirmed.length;
@@ -541,6 +596,21 @@ $("client-rating-filter").addEventListener("change",drawClients);
 $("client-sort").addEventListener("change",drawClients);
 $("booking-search").addEventListener("input",filterBookingList);
 $("booking-status-filter").addEventListener("change",filterBookingList);
+$("alarm-enabled").addEventListener("change",()=>{
+ if($("alarm-enabled").checked){
+  localStorage.setItem(ALARM_PREF_KEY,"true");
+  if(!window.BarnaguerNative.hasExactAlarmPermission()){
+   $("alarm-status").textContent="Se abrirán los ajustes de Android para autorizar las alarmas exactas.";
+   window.BarnaguerNative.requestExactAlarmPermission();
+   return;
+  }
+  syncTurnAlarms(cachedBookings);
+ }else{
+  localStorage.setItem(ALARM_PREF_KEY,"false");
+  window.BarnaguerNative.cancelAlarms();
+  $("alarm-status").textContent="Alarmas desactivadas.";
+ }
+});
 
 $("brand-admin-access").onclick=()=>show("admin");$("tab-book").onclick=()=>show("book");$("tab-services").onclick=()=>show("services");
 $("new-booking").onclick=()=>{$("admin-form-wrap").classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{let d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("")};
