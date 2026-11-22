@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -23,11 +25,42 @@ public class MainActivity extends Activity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setDatabaseEnabled(true);
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                view.evaluateJavascript(
+                    "(function() {" +
+                    " if (window.__barnaguerHapticsInstalled) return;" +
+                    " window.__barnaguerHapticsInstalled = true;" +
+                    " document.addEventListener('click', function(event) {" +
+                    "   var target = event.target;" +
+                    "   if (!(target instanceof Element)) return;" +
+                    "   if (target.closest('button,[role=button],input[type=button],input[type=submit],input[type=reset]')) {" +
+                    "     if (window.BarnaguerHaptics) window.BarnaguerHaptics.vibrate();" +
+                    "   }" +
+                    " }, true);" +
+                    "})();", null);
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new AlarmBridge(), "BarnaguerNative");
+        webView.addJavascriptInterface(new HapticsBridge(), "BarnaguerHaptics");
         setContentView(webView);
         webView.loadUrl("https://barnaguer.github.io/barnaguer/");
+    }
+
+    private class HapticsBridge {
+        @JavascriptInterface public void vibrate() {
+            runOnUiThread(() -> {
+                Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                if (vibrator == null || !vibrator.hasVibrator()) return;
+                if (Build.VERSION.SDK_INT >= 26) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vibrator.vibrate(30);
+                }
+            });
+        }
     }
 
     private class AlarmBridge {
