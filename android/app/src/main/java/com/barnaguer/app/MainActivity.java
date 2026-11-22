@@ -30,15 +30,63 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 view.evaluateJavascript(
                     "(function() {" +
-                    " if (window.__barnaguerHapticsInstalled) return;" +
-                    " window.__barnaguerHapticsInstalled = true;" +
+                    " if (window.__barnaguerFeedbackInstalled) return;" +
+                    " window.__barnaguerFeedbackInstalled = true;" +
+                    " var audioContext;" +
+                    " function getAudio() {" +
+                    "   var AudioCtx = window.AudioContext || window.webkitAudioContext;" +
+                    "   if (!AudioCtx) return null;" +
+                    "   if (!audioContext) audioContext = new AudioCtx();" +
+                    "   if (audioContext.state === 'suspended') audioContext.resume();" +
+                    "   return audioContext;" +
+                    " }" +
+                    " function playScheduleClick() {" +
+                    "   var ctx = getAudio(); if (!ctx) return;" +
+                    "   var now = ctx.currentTime;" +
+                    "   var osc = ctx.createOscillator();" +
+                    "   var gain = ctx.createGain();" +
+                    "   osc.type = 'triangle';" +
+                    "   osc.frequency.setValueAtTime(155, now);" +
+                    "   osc.frequency.exponentialRampToValueAtTime(72, now + 0.055);" +
+                    "   gain.gain.setValueAtTime(0.0001, now);" +
+                    "   gain.gain.exponentialRampToValueAtTime(0.24, now + 0.004);" +
+                    "   gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);" +
+                    "   osc.connect(gain); gain.connect(ctx.destination);" +
+                    "   osc.start(now); osc.stop(now + 0.08);" +
+                    " }" +
+                    " function playReservationSuccess() {" +
+                    "   var ctx = getAudio(); if (!ctx) return;" +
+                    "   var now = ctx.currentTime;" +
+                    "   [523.25, 659.25, 783.99].forEach(function(freq, i) {" +
+                    "     var osc = ctx.createOscillator();" +
+                    "     var gain = ctx.createGain();" +
+                    "     var start = now + i * 0.105;" +
+                    "     osc.type = 'sine'; osc.frequency.setValueAtTime(freq, start);" +
+                    "     gain.gain.setValueAtTime(0.0001, start);" +
+                    "     gain.gain.exponentialRampToValueAtTime(0.16, start + 0.018);" +
+                    "     gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);" +
+                    "     osc.connect(gain); gain.connect(ctx.destination);" +
+                    "     osc.start(start); osc.stop(start + 0.43);" +
+                    "   });" +
+                    " }" +
                     " document.addEventListener('click', function(event) {" +
                     "   var target = event.target;" +
                     "   if (!(target instanceof Element)) return;" +
-                    "   if (target.closest('button,[role=button],input[type=button],input[type=submit],input[type=reset]')) {" +
-                    "     if (window.BarnaguerHaptics) window.BarnaguerHaptics.vibrate();" +
-                    "   }" +
+                    "   var button = target.closest('button,[role=button],input[type=button],input[type=submit],input[type=reset]');" +
+                    "   if (!button) return;" +
+                    "   if (window.BarnaguerHaptics) window.BarnaguerHaptics.vibrate();" +
+                    "   var label = (button.innerText || button.value || button.getAttribute('aria-label') || '').trim();" +
+                    "   if (/\\d{1,2}:\\d{2}|\\b(?:AM|PM)\\b/i.test(label)) playScheduleClick();" +
                     " }, true);" +
+                    " var successVisible = false;" +
+                    " var successText = 'Se ha realizado su reserva con éxito';" +
+                    " var observer = new MutationObserver(function() {" +
+                    "   var pageText = document.body ? document.body.innerText : '';" +
+                    "   var nowVisible = pageText.toLowerCase().indexOf(successText.toLowerCase()) !== -1;" +
+                    "   if (nowVisible && !successVisible) playReservationSuccess();" +
+                    "   successVisible = nowVisible;" +
+                    " });" +
+                    " if (document.body) observer.observe(document.body, {childList:true, subtree:true, characterData:true});" +
                     "})();", null);
             }
         });
