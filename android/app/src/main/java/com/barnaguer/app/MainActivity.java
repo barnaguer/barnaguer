@@ -93,8 +93,21 @@ public class MainActivity extends Activity {
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new AlarmBridge(), "BarnaguerNative");
         webView.addJavascriptInterface(new HapticsBridge(), "BarnaguerHaptics");
+        webView.addJavascriptInterface(new UpdatesBridge(), "BarnaguerUpdates");
         setContentView(webView);
         webView.loadUrl("https://barnaguer.github.io/barnaguer/");
+    }
+
+
+    private class UpdatesBridge {
+        @JavascriptInterface public void refreshAfterUpdate() {
+            runOnUiThread(() -> {
+                if (webView != null) {
+                    webView.clearCache(true);
+                    webView.reload();
+                }
+            });
+        }
     }
 
     private class HapticsBridge {
