@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
                     "   if (/\\d{1,2}:\\d{2}|\\b(?:AM|PM)\\b/i.test(label)) playScheduleClick();" +
                     " }, true);" +
                     " var successVisible = false;" +
-                    " var successText = 'Se ha realizado su reserva con éxito';" +
+                    " var successText = '¡Tu turno quedó registrado para el';" +
                     " var observer = new MutationObserver(function() {" +
                     "   var pageText = document.body ? document.body.innerText : '';" +
                     "   var nowVisible = pageText.toLowerCase().indexOf(successText.toLowerCase()) !== -1;" +
