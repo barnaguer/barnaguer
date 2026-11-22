@@ -1,4 +1,4 @@
-const CACHE_NAME = "barnaguer-pwa-v8";
+const CACHE_NAME = "barnaguer-pwa-v9";
 const SUPABASE_LIBRARY_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 const APP_SHELL = [
   "./",
@@ -85,27 +85,22 @@ self.addEventListener("fetch", event => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
-    // Abre primero la copia local para evitar esperas cuando la conexión es débil.
-    const updatePromise = fetch(request).then(async response => {
-      if (response && response.ok) {
-        const cache = await caches.open(CACHE_NAME);
-        await cache.put("./index.html", response.clone());
-      }
-      return response;
-    }).catch(() => null);
-
-    // La actualización de la copia se realiza en segundo plano.
-    event.waitUntil(updatePromise.then(() => undefined));
-
+    // Prioriza siempre la versión publicada. La copia local queda como respaldo sin conexión.
     event.respondWith((async () => {
-      const cached = await caches.match("./index.html");
-      if (cached) return cached;
-
-      const response = await updatePromise;
-      return response || new Response("BARNAGUER no está disponible sin conexión. Conéctate a internet e inténtalo de nuevo.", {
-        status: 503,
-        headers: { "Content-Type": "text/plain; charset=utf-8" }
-      });
+      try {
+        const response = await fetch(request, { cache: "no-store" });
+        if (response && response.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put("./index.html", response.clone());
+        }
+        return response;
+      } catch (error) {
+        const cached = await caches.match("./index.html");
+        return cached || new Response("BARNAGUER no está disponible sin conexión. Conéctate a internet e inténtalo de nuevo.", {
+          status: 503,
+          headers: { "Content-Type": "text/plain; charset=utf-8" }
+        });
+      }
     })());
     return;
   }
