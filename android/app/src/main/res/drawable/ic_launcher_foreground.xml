@@ -1,17 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="512"
-    android:viewportHeight="512">
-    <group android:pivotX="256" android:pivotY="256" android:scaleX="0.68" android:scaleY="0.68">
-        <path android:fillColor="#47342E" android:pathData="M256,20 L400,68 L477,220 L477,292 L414,445 L256,492 L98,445 L35,292 L35,220 L112,68 Z"/>
-        <path android:fillColor="#E9E3D8" android:pathData="M256,42 L386,85 L455,224 L455,288 L397,426 L256,470 L115,426 L57,288 L57,224 L126,85 Z"/>
-        <path android:fillColor="#95642F" android:pathData="M256,64 L372,101 L432,230 L432,282 L380,405 L256,448 L132,405 L80,282 L80,230 L140,101 Z"/>
-        <path android:fillColor="#47342E" android:strokeColor="#E9E3D8" android:strokeWidth="5" android:pathData="M190,145 L256,126 L322,145 L345,224 L167,224 Z"/>
-        <path android:fillColor="#47342E" android:strokeColor="#E9E3D8" android:strokeWidth="5" android:strokeLineJoin="round" android:pathData="M83,260 C145,239 367,239 429,260 C376,277 346,284 342,304 L348,356 L331,393 L294,418 L218,418 L181,393 L164,356 L170,304 C166,284 136,277 83,260 Z"/>
-        <path android:fillColor="#47342E" android:strokeColor="#E9E3D8" android:strokeWidth="5" android:pathData="M82,260 C150,237 362,237 430,260 C365,279 147,279 82,260 Z"/>
-        <path android:fillColor="#E9E3D8" android:pathData="M250,271 L213,315 L207,331 L277,286 L319,287 L319,351 L285,331 L266,338 L250,331 L207,352 L204,338 L240,298 L259,271 Z"/>
-        <path android:fillColor="#E9E3D8" android:pathData="M220,365 L256,358 L292,365 L292,385 L271,398 L262,398 L262,383 L250,383 L250,398 L241,398 L220,385 Z"/>
-    </group>
-</vector>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/barnaguer_logo"
+    android:gravity="fill" />

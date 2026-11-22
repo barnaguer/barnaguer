@@ -8,8 +8,8 @@ android {
         applicationId = "com.barnaguer.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
     }
 
     signingConfigs {
@@ -28,6 +28,16 @@ android {
             isMinifyEnabled = false
         }
     }
+}
+
+tasks.register<Copy>("copyBarnaguerLauncherLogo") {
+    from(rootProject.file("../barnaguer-logo.jpg"))
+    into(layout.projectDirectory.dir("src/main/res/drawable-nodpi"))
+    rename { "barnaguer_logo.jpg" }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("copyBarnaguerLauncherLogo")
 }
 
 dependencies {
