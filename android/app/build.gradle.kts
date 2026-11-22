@@ -43,3 +43,5 @@ tasks.named("preBuild").configure {
 dependencies {
     implementation("androidx.core:core:1.15.0")
 }
+
+// The launcher bitmap is copied from the exact root logo asset before preBuild.
