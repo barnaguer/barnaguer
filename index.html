@@ -671,11 +671,12 @@ init();
 </script>
 <script>
 if ("serviceWorker" in navigator) {
-  // Si se instala una versión nueva del service worker, recarga una sola vez
-  // para que esta misma apertura utilice la versión más reciente de BARNAGUER.
+  // Cuando se activa una versión nueva, limpia la caché nativa de Android
+  // y recarga la aplicación para mostrar inmediatamente el contenido actualizado.
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (!sessionStorage.getItem("barnaguer-sw-reloaded")) {
-      sessionStorage.setItem("barnaguer-sw-reloaded", "1");
+    if (window.BarnaguerUpdates && typeof window.BarnaguerUpdates.refreshAfterUpdate === "function") {
+      window.BarnaguerUpdates.refreshAfterUpdate();
+    } else {
       window.location.reload();
     }
   });
