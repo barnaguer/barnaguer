@@ -165,6 +165,7 @@ async function loadSlots(){
  const requestId=++slotsRequestId;
  const requestedDate=selectedDate;
  const cacheKey="barnaguer-booked-slots-"+requestedDate;
+ blockedSlots=[];
  const readCache=()=>{try{const cached=JSON.parse(localStorage.getItem(cacheKey)||"[]");return Array.isArray(cached)?[...new Set(cached.filter(t=>TIMES.includes(t)))]:[]}catch(error){return []}};
  if(!db||!navigator.onLine){
   bookedSlots=readCache();
@@ -647,7 +648,7 @@ $("admin-login-form").addEventListener("submit",async e=>{
  try{
   const {data,error}=await db.auth.signInWithPassword({email:$("admin-email").value.trim(),password:$("admin-password").value});
   if(error){status("admin-login-status","No se pudo iniciar sesión. Verifica el correo y la contraseña.");return}
-  adminSession=data.session;status("admin-login-status","");updateAdminView();
+  adminSession=data.session;status("admin-login-status","");updateAdminView();if(selectedDate)await loadSlots();
  }catch(error){
   status("admin-login-status","No se pudo completar el acceso. Comprueba tu conexión e inténtalo de nuevo.");
  }finally{
@@ -660,7 +661,7 @@ $("admin-logout").onclick=async()=>{
  try{
   const {error}=await db.auth.signOut();
   if(error)throw error;
-  adminSession=null;updateAdminView();
+  adminSession=null;blockedSlots=[];updateAdminView();if(selectedDate)await loadSlots();
  }catch(error){
   status("admin-login-status","No se pudo cerrar la sesión. Comprueba tu conexión e inténtalo de nuevo.");
  }finally{
@@ -734,7 +735,7 @@ function init(){
  if(!selectedDate){const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();drawTimes()}}
  if(window.location.hash==="#admin")show("admin");
  if(!db){availabilityIsStale=true;$("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";return}
- db.auth.getSession().then(({data})=>{adminSession=data.session;updateAdminView()}).catch(()=>{});
+ db.auth.getSession().then(async({data})=>{adminSession=data.session;updateAdminView();if(selectedDate)await loadSlots()}).catch(()=>{});
  loadSlots();
  cacheUpcomingSlots();
 }
