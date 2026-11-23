@@ -1,4 +1,4 @@
-const CACHE_NAME = "barnaguer-pwa-v9";
+const CACHE_NAME = "barnaguer-pwa-v10";
 const SUPABASE_LIBRARY_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 const APP_SHELL = [
   "./",
