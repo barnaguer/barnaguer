@@ -4,6 +4,13 @@ on:
   push:
     paths:
       - "android/**"
+      - "index.html"
+      - "manifest.json"
+      - "service-worker.js"
+      - "*.png"
+      - "*.jpg"
+      - "*.jpeg"
+      - "*.webp"
       - ".github/workflows/android-apk.yml"
 jobs:
   build:
