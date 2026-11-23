@@ -683,6 +683,98 @@ init();
 })();
 </script>
 <script>
+/* Sonido y vibración BARNAGUER para web y PWA. */
+(function () {
+  if (window.__barnaguerFeedbackInstalled) return;
+  window.__barnaguerFeedbackInstalled = true;
+
+  let audioContext = null;
+
+  function getAudioContext() {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+    try {
+      if (!audioContext) audioContext = new AudioCtx();
+      if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+      return audioContext;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function playScheduleClick() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(155, now);
+    oscillator.frequency.exponentialRampToValueAtTime(72, now + 0.055);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.24, now + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.08);
+  }
+
+  function playReservationSuccess() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [523.25, 659.25, 783.99].forEach((frequency, index) => {
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const start = now + index * 0.105;
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.16, start + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start(start);
+      oscillator.stop(start + 0.43);
+    });
+  }
+
+  function vibrateButton() {
+    try {
+      if (window.BarnaguerHaptics && typeof window.BarnaguerHaptics.vibrate === "function") {
+        window.BarnaguerHaptics.vibrate();
+      } else if (navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+    } catch (_) {}
+  }
+
+  document.addEventListener("click", function (event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]');
+    if (!button) return;
+
+    vibrateButton();
+    const label = (button.innerText || button.value || button.getAttribute("aria-label") || "").trim();
+    if (/\d{1,2}:\d{2}|\b(?:AM|PM)\b/i.test(label)) playScheduleClick();
+  }, true);
+
+  let successVisible = false;
+  const successText = "¡Tu turno quedó registrado para el";
+  const successObserver = new MutationObserver(function () {
+    const pageText = document.body ? document.body.innerText : "";
+    const visible = pageText.toLowerCase().includes(successText.toLowerCase());
+    if (visible && !successVisible) playReservationSuccess();
+    successVisible = visible;
+  });
+  if (document.body) {
+    successObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+})();
+</script>
+<script>
 if ("serviceWorker" in navigator) {
   // Cuando se activa una versión nueva, limpia la caché nativa de Android
   // y recarga la aplicación para mostrar inmediatamente el contenido actualizado.
