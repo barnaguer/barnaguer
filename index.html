@@ -121,6 +121,21 @@ const SUPABASE_URL="https://kxrsnlttqwneqgvwwclq.supabase.co";
 const SUPABASE_KEY="sb_publishable_jNRVDDZX73NuPZt190O9vw_q8e0Lt37";
 const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 const TIMES=["10:00 AM","10:45 AM","11:30 AM","12:30 PM","1:15 PM","2:00 PM","2:45 PM","3:30 PM","4:30 PM","5:15 PM","6:00 PM"];
+function normalizeSlotTime(value){
+ if(typeof value!=="string")return "";
+ const match=value.trim().toUpperCase().match(/^(\\d{1,2}):(\\d{2})(?::\\d{2}(?:\\.\\d+)?)?\\s*(AM|PM)?$/);
+ if(!match)return "";
+ let hour=Number(match[1]);const minute=Number(match[2]);const suffix=match[3];
+ if(minute>59)return "";
+ if(suffix){if(hour<1||hour>12)return "";if(suffix==="AM"&&hour===12)hour=0;else if(suffix==="PM"&&hour!==12)hour+=12;}
+ else if(hour>23)return "";
+ const labelHour=hour%12||12;
+ const label=labelHour+":"+pad(minute)+" "+(hour>=12?"PM":"AM");
+ return TIMES.includes(label)?label:"";
+}
+function normalizeSlotRows(rows){
+ return [...new Set((rows||[]).map(row=>normalizeSlotTime(typeof row==="string"?row:row?.booking_time)).filter(Boolean))];
+}
 let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],blockedSlots=[],allClients=[],cachedBookings=[],availabilityIsStale=false;
 let adminRenderRequest=0,slotsRequestId=0;
 let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false,googlePendingSave=null;
@@ -181,12 +196,12 @@ async function loadSlots(){
   const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:requestedDate});
   if(error)throw error;
   if(requestId!==slotsRequestId||selectedDate!==requestedDate)return;
-  const freshSlots=[...new Set((data||[]).map(x=>x.booking_time).filter(t=>TIMES.includes(t)))];
+  const freshSlots=normalizeSlotRows(data);
   let freshBlocked=[];
   if(adminSession){
    const {data:blockedData,error:blockedError}=await db.from("blocked_slots").select("booking_time").eq("booking_date",requestedDate);
    if(blockedError)throw blockedError;
-   freshBlocked=[...new Set((blockedData||[]).map(x=>x.booking_time).filter(t=>TIMES.includes(t)))];
+   freshBlocked=normalizeSlotRows(blockedData);
   }
   try{localStorage.setItem(cacheKey,JSON.stringify(freshSlots))}catch(storageError){}
   bookedSlots=freshSlots;
@@ -294,7 +309,7 @@ async function cacheUpcomingSlots(){
    try{
     const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:key});
     if(error||!navigator.onLine)return;
-    const freshSlots=[...new Set((data||[]).map(x=>x.booking_time).filter(t=>TIMES.includes(t)))];
+    const freshSlots=normalizeSlotRows(data);
     localStorage.setItem(cacheKey,JSON.stringify(freshSlots));
    }catch(error){}
   }));
