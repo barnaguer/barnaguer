@@ -14,18 +14,29 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.webkit.WebViewAssetLoader;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private WebViewAssetLoader assetLoader;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
         webView = new WebView(this);
         webView.setBackgroundColor(0xFFD2CCC2);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setDatabaseEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
+            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, android.webkit.WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
+            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                return assetLoader.shouldInterceptRequest(Uri.parse(url));
+            }
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 view.evaluateJavascript(
@@ -95,7 +106,7 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new HapticsBridge(), "BarnaguerHaptics");
         webView.addJavascriptInterface(new UpdatesBridge(), "BarnaguerUpdates");
         setContentView(webView);
-        webView.loadUrl("https://barnaguer.github.io/barnaguer/");
+        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
 
