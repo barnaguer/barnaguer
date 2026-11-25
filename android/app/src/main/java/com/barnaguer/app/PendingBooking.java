@@ -2,12 +2,9 @@ package com.barnaguer.app;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "pending_bookings", indices = {
-    @Index(value = {"bookingDate", "bookingTime"}, unique = true)
-})
+@Entity(tableName = "pending_bookings")
 public class PendingBooking {
     @PrimaryKey @NonNull public String id;
     @NonNull public String customerName;
