@@ -21,6 +21,6 @@ public final class OfflineSyncScheduler {
             .setBackoffCriteria(androidx.work.BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
             .build();
         WorkManager.getInstance(context.getApplicationContext())
-            .enqueueUniqueWork(UNIQUE_WORK, ExistingWorkPolicy.KEEP, request);
+            .enqueueUniqueWork(UNIQUE_WORK, ExistingWorkPolicy.APPEND_OR_REPLACE, request);
     }
 }
