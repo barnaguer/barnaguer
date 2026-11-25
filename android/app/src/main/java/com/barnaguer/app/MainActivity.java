@@ -15,16 +15,13 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
+
 public class MainActivity extends Activity {
     private WebView webView;
-    private WebViewAssetLoader assetLoader;
     private WebViewAssetLoader assetLoader;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        assetLoader = new WebViewAssetLoader.Builder()
-            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-            .build();
         assetLoader = new WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .build();
