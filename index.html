@@ -675,12 +675,13 @@ $("booking-form").addEventListener("submit",async e=>{
  const name=$("client-name").value.trim(),phone=$("client-phone").value.trim();
  if(!name||!phone)return;
  const bookingDate=selectedDate,bookingTime=selectedTime;
+ const clientRequestId=(window.crypto&&typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():("xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(ch){const r=Math.random()*16|0;return (ch==="x"?r:(r&3|8)).toString(16)}));
  const submitButton=$("booking-form").querySelector('button[type="submit"]');
  if(submitButton.disabled)return;
  if(!db||!navigator.onLine){
   if(!window.BarnaguerOfflineNative){status("booking-status","Sin conexión: no se puede guardar una solicitud en este dispositivo. Conéctate a Internet o contacta por WhatsApp.");return}
   submitButton.disabled=true;submitButton.textContent="Guardando solicitud...";
-  callOfflineNative("savePendingBooking",JSON.stringify({name,phone,date:bookingDate,time:bookingTime}))
+  callOfflineNative("savePendingBooking",JSON.stringify({id:clientRequestId,name,phone,date:bookingDate,time:bookingTime}))
    .then(result=>{
     if(!result.success){status("booking-status",result.message||"No se pudo guardar la solicitud.");return}
     status("booking-status","Solicitud guardada para el "+labelDate(fromKey(bookingDate))+" a las "+bookingTime+". Está PENDIENTE de confirmación y se verificará cuando vuelva Internet.");
@@ -693,7 +694,7 @@ $("booking-form").addEventListener("submit",async e=>{
  }
  submitButton.disabled=true;submitButton.textContent="Confirmando...";
  try{
-  const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:bookingDate,booking_time:bookingTime});
+  const {error}=await db.from("bookings").insert({client_request_id:clientRequestId,customer_name:name,customer_phone:phone,booking_date:bookingDate,booking_time:bookingTime});
   if(error){
    if(error.code==="23505"){selectedTime="";saveBookingDraft();status("booking-status","Ese horario acaba de ser reservado. Elige otro.");await loadSlots()}
    else if(error.code==="P0001"&&/bloqueado/i.test(error.message||""))status("booking-status","No es posible realizar esta reserva, llame o escriba al +53 5478 9515");
