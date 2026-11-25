@@ -140,29 +140,6 @@ let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],blockedSlot
 let adminRenderRequest=0,slotsRequestId=0;
 let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false,googlePendingSave=null;
 const $=id=>document.getElementById(id);
-window.__barnaguerGoogleAuthResult=function(token,error){
- const pending=window.__barnaguerGoogleAuthPending;
- if(!pending)return;
- window.__barnaguerGoogleAuthPending=null;
- if(error)pending.reject(new Error(error));
- else if(token)pending.resolve(token);
- else pending.reject(new Error("Google no devolvió un token de acceso."));
-};
-function requestNativeGoogleContactsToken(){
- return new Promise((resolve,reject)=>{
-  if(!window.BarnaguerNative||typeof window.BarnaguerNative.requestGoogleContactsAuthorization!=="function"){
-   reject(new Error("La autorización nativa de Google no está disponible."));
-   return;
-  }
-  if(window.__barnaguerGoogleAuthPending){
-   reject(new Error("Ya hay una autorización de Google en curso."));
-   return;
-  }
-  window.__barnaguerGoogleAuthPending={resolve,reject};
-  try{window.BarnaguerNative.requestGoogleContactsAuthorization()}
-  catch(error){window.__barnaguerGoogleAuthPending=null;reject(error)}
- });
-}
 const pad=n=>String(n).padStart(2,"0");
 const dateKey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const fromKey=s=>{const p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2])};
@@ -517,14 +494,6 @@ async function saveClientToGoogle(client,button,status){
    status.textContent="Contacto guardado en Google Contacts.";button.textContent="Guardado en Google";button.classList.add("saved");button.disabled=true;
   }catch(error){status.textContent="No se pudo completar la operación: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}
  };
- if(window.BarnaguerNative&&typeof window.BarnaguerNative.requestGoogleContactsAuthorization==="function"){
-  try{
-   const token=await requestNativeGoogleContactsToken();
-   googleAccessToken=token;googleTokenExpiresAt=Date.now()+3500000;
-   await saveOrFind(token);
-  }catch(error){status.textContent="No se pudo autorizar Google: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}
-  return;
- }
  if(googleAccessToken&&Date.now()<googleTokenExpiresAt-60000){await saveOrFind(googleAccessToken);return}
  if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){status.textContent="Google todavía está cargando. Recarga la página e inténtalo de nuevo.";button.disabled=false;button.textContent="Guardar contacto";return}
  try{
@@ -565,14 +534,6 @@ async function updateGoogleContact(client,token){
 }
 function requestGoogleForRating(client,button,status){
  const handleToken=async token=>{try{status.textContent=await updateGoogleContact(client,token)}catch(error){status.textContent="Clasificación guardada en BARNAGUER, pero Google no se actualizó: "+error.message}finally{button.disabled=false}};
- if(window.BarnaguerNative&&typeof window.BarnaguerNative.requestGoogleContactsAuthorization==="function"){
-  requestNativeGoogleContactsToken().then(token=>{
-   googleAccessToken=token;googleTokenExpiresAt=Date.now()+3500000;return handleToken(token);
-  }).catch(error=>{
-   status.textContent="Clasificación guardada en BARNAGUER, pero Google no autorizó el acceso: "+error.message;button.disabled=false;
-  });
-  return;
- }
  if(googleAccessToken&&Date.now()<googleTokenExpiresAt-60000){handleToken(googleAccessToken);return}
  if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){status.textContent="Clasificación guardada en BARNAGUER. Recarga la página para conectar con Google y actualizar el contacto.";button.disabled=false;return}
  try{
