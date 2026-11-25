@@ -61,10 +61,12 @@ public class OfflineBookingSyncWorker extends Worker {
 
                     if (status >= 200 && status < 300) {
                         database.offlineDao().updateBookingStatus(booking.id, "CONFIRMADA");
+                        database.offlineDao().cacheOccupiedSlot(new CachedSlot(booking.bookingDate, booking.bookingTime));
                     } else if (status == 409 || response.contains("23505") ||
                             response.contains("P0001") ||
                             response.toLowerCase().contains("horario bloqueado")) {
                         database.offlineDao().updateBookingStatus(booking.id, "NO_DISPONIBLE");
+                        database.offlineDao().cacheOccupiedSlot(new CachedSlot(booking.bookingDate, booking.bookingTime));
                     } else if (status == 401 || status == 403 || status >= 500) {
                         Log.w(TAG, "La sincronización debe reintentarse. HTTP " + status);
                         return Result.retry();
