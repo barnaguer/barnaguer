@@ -470,7 +470,7 @@ async function renderAdmin(){
   return a.booking_time.localeCompare(b.booking_time);
  });
  orderedBookings.forEach(x=>{
-  const item=document.createElement("div");item.className="booking";item.dataset.status=x.status==="canceled"?"canceled":"confirmed";
+  const item=document.createElement("div");item.className="booking";item.dataset.status=x.status==="canceled"?"canceled":"confirmed";item.dataset.customerName=x.customer_name||"";item.dataset.customerPhone=x.customer_phone||"";
   const info=document.createElement("div");
   info.innerHTML="<strong>"+esc(x.customer_name)+"</strong><small>"+esc(x.customer_phone)+" · "+labelDate(fromKey(x.booking_date))+" · "+esc(x.booking_time)+" · "+(x.status==="canceled"?'<span class="tag-canceled">Cancelado</span>':"Confirmado")+"</small>";
   const action=document.createElement("button");action.className="btn "+(x.status==="canceled"?"":"danger");action.type="button";action.textContent=x.status==="canceled"?"Reactivar":"Cancelar";
@@ -540,10 +540,15 @@ async function deleteBookingBySwipe(booking,item){
  }
 }
 function filterBookingList(){
- const query=($("booking-search").value||"").trim().toLowerCase();
+ const raw=($("booking-search").value||"").trim();
+ const normalize=value=>String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLocaleLowerCase("es");
+ const query=normalize(raw),phoneQuery=raw.replace(/\\D/g,"");
  const state=$("booking-status-filter").value;
  [...$("booking-list").children].forEach(item=>{
-  const matchesText=!query||item.textContent.toLowerCase().includes(query);
+  if(!item.classList.contains("booking"))return;
+  const name=normalize(item.dataset.customerName||"");
+  const phone=String(item.dataset.customerPhone||"").replace(/\\D/g,"");
+  const matchesText=!query||(name.includes(query)||(phoneQuery.length>0&&phone.includes(phoneQuery)));
   const matchesState=state==="all"||item.dataset.status===state;
   item.hidden=!(matchesText&&matchesState);
  });
