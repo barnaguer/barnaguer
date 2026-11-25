@@ -1,0 +1,78 @@
+name: Build BARNAGUER Android
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "android/**"
+      - "index.html"
+      - "manifest.json"
+      - "service-worker.js"
+      - "*.png"
+      - "*.jpg"
+      - "*.jpeg"
+      - "*.webp"
+      - ".github/workflows/android-apk.yml"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Build APK
+        run: gradle -p android :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: barnaguer-android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+  release:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Verify signing secrets
+        env:
+          KEYSTORE: ${{ secrets.BARNAGUER_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.BARNAGUER_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.BARNAGUER_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.BARNAGUER_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE" || (echo "Missing BARNAGUER_KEYSTORE_BASE64" && exit 1)
+          test -n "$STORE_PASSWORD" || (echo "Missing BARNAGUER_KEYSTORE_PASSWORD" && exit 1)
+          test -n "$KEY_ALIAS" || (echo "Missing BARNAGUER_KEY_ALIAS" && exit 1)
+          test -n "$KEY_PASSWORD" || (echo "Missing BARNAGUER_KEY_PASSWORD" && exit 1)
+      - name: Restore signing key
+        env:
+          KEYSTORE: ${{ secrets.BARNAGUER_KEYSTORE_BASE64 }}
+        run: |
+          printf '%s' "$KEYSTORE" | tr -d '[:space:]' | base64 --decode > android/release-key.p12
+          test -s android/release-key.p12
+      - name: Build signed release APK
+        env:
+          BARNAGUER_KEYSTORE_PATH: ../release-key.p12
+          BARNAGUER_KEYSTORE_PASSWORD: ${{ secrets.BARNAGUER_KEYSTORE_PASSWORD }}
+          BARNAGUER_KEY_ALIAS: ${{ secrets.BARNAGUER_KEY_ALIAS }}
+          BARNAGUER_KEY_PASSWORD: ${{ secrets.BARNAGUER_KEY_PASSWORD }}
+        run: gradle -p android :app:assembleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: barnaguer-android-release
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
+      - name: Remove signing key
+        if: always()
+        run: rm -f android/release-key.p12

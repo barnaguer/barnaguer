@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "Barnaguer",
+  "short_name": "Barnaguer",
+  "description": "Reserva tu próximo turno en BARNAGUER.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#D2CCC2",
+  "theme_color": "#47342E",
+  "icons": [
+    {
+      "src": "./barnaguer-logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "./barnaguer-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

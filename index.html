@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#47342e">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/jpeg" href="./barnaguer-logo.jpg">
+<link rel="apple-touch-icon" href="./barnaguer-logo.jpg">
+<title>BARNAGUER | Tu Barbería en Santa Fé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--primary:#9C8162;--secondary:#605048;--accent:#8B5E2D;--ink:#47342E;--bg:#D2CCC2;--neutral:#E2E1DD;--white:#fff;--muted:#766c64;--line:#d5cec5;--shadow:0 12px 34px #47342e16}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto, sans-serif}button,input{font:inherit}button{cursor:pointer}.shell{max-width:1120px;margin:auto;padding:22px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px;border:0;background:transparent;padding:0;color:inherit;text-align:left;cursor:pointer}.avatar{width:64px;height:64px;flex:0 0 64px;border-radius:14px;object-fit:cover;object-position:center;display:block}.brand h1{font:700 23px Poppins;margin:0;letter-spacing:2px}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}.nav{display:flex;gap:8px}.nav button,.btn{border:0;border-radius:9px;padding:12px 17px;background:var(--secondary);color:#fff;font-weight:600}.nav button.active,.btn.primary{background:var(--accent)}.btn.saved{background:#9C8162}.hero{height:170px;border-radius:16px;background:linear-gradient(110deg,rgba(71,52,46,.34),rgba(71,52,46,.04) 58%),url("./barnaguer-banner.png") center/cover no-repeat;color:white;display:flex;align-items:flex-start;padding:16px 20px;margin-bottom:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}.hero>div{position:relative;z-index:1;width:100%;max-width:none}.hero:after{content:none}.hero h2,.hero p{display:none!important}.hero h2{margin:0 0 5px;font:600 18px Poppins;line-height:1.2;transform:translateY(-9.5px)}.hero p{position:absolute;left:calc(15% - 26px);right:0;top:105px;margin:0;text-align:center;color:#f0e9e1;font-size:14px;line-height:1.3}.layout{display:grid;grid-template-columns:1fr 1fr;gap:20px} .services-panel{background:var(--neutral);border:2px solid var(--primary);padding:clamp(18px,4vw,34px);max-width:760px;margin:0 auto}.services-heading{text-align:center;margin:0 auto 22px}.services-kicker{display:inline-block;color:var(--accent);font:700 12px Poppins;letter-spacing:3px;margin-bottom:8px}.services-heading h2{margin:0;color:var(--ink);font:700 clamp(20px,4vw,28px) Poppins;letter-spacing:.5px}.services-rule{display:block;width:72px;height:3px;background:var(--accent);margin:13px auto 0;border-radius:3px}.services-list{display:grid;gap:0}.service-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:15px 8px;border-bottom:1px solid #9C8162;color:var(--ink);font-size:clamp(15px,3vw,18px);font-weight:600}.service-row strong{white-space:nowrap;font:700 clamp(16px,3.2vw,19px) Poppins;color:var(--ink)}.service-featured{background:transparent;border-radius:0;border-bottom:1px solid #9C8162;margin:0;padding:15px 8px;color:var(--accent)}.service-featured strong{color:var(--accent)}.services-thanks{text-align:center;color:var(--secondary);font:italic 600 19px Poppins;margin:26px 0 2px}.services-contact{display:block;width:fit-content;max-width:100%;margin:20px auto 2px;text-align:center;text-decoration:none;background:var(--accent);color:var(--neutral);padding:13px 20px;border-radius:10px;font-weight:700}.panel{background:var(--neutral);border-radius:16px;padding:22px;box-shadow:var(--shadow)}.panel h3{font:600 18px Poppins;margin:0 0 16px}.date-list,.time-grid{display:grid;gap:9px}.date-list{grid-template-columns:repeat(3,1fr)}.date-option,.time-option{border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);padding:13px 8px;text-align:center}.date-option strong{display:block;font-size:13px}.date-option span{font-size:12px;color:var(--muted)}.date-option.selected,.time-option.selected{border:2px solid var(--accent);background:#f4eee7}.date-option:disabled,.time-option:disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through}.date-option:disabled{text-decoration:none}.date-option:disabled strong,.date-option:disabled span{text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:currentColor}.time-grid{grid-template-columns:repeat(3,1fr)}.time-option{font-weight:600;padding:13px 4px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.time-option.admin-booked,.time-option.admin-blocked{background:#fff;border:2px solid var(--accent);color:var(--muted);opacity:1;text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:var(--muted)}.time-option.admin-booked::before{content:none}.time-option.admin-booked:disabled,.time-option.admin-blocked:disabled{opacity:1;cursor:not-allowed;text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:currentColor}.field{display:grid;gap:6px;margin:14px 0}.field label{font-size:13px;font-weight:600}.field input{width:100%;border:1px solid var(--line);border-radius:9px;padding:13px;background:#fff;color:var(--ink)}.booking-summary{background:#fff;border:1px solid var(--primary);border-radius:12px;padding:14px;margin:0 0 16px}.booking-summary-title{font:600 14px Poppins;margin:0 0 10px;color:var(--ink)}.booking-summary-details{display:grid;grid-template-columns:1fr 1fr;gap:10px}.booking-summary-item span{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}.booking-summary-item strong{display:block;font-size:14px;color:var(--accent);overflow-wrap:anywhere}.full{width:100%;margin-top:8px}.note{font-size:12px;color:var(--muted);line-height:1.5}.hidden{display:none!important}.status{margin-top:13px;padding:12px;border-radius:9px;background:#eee5d9;font-size:13px}.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border-radius:12px;padding:15px}.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{font:600 24px Poppins}.booking{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}.booking:last-child{border:0}.client-card{background:#fff;border-radius:11px;padding:13px;margin:9px 0}.client-card small{display:block;color:var(--muted);margin-top:4px}.client-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.client-search{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;margin:0 0 10px}.history-entry{padding:12px 0;border-bottom:1px solid var(--line)}.history-entry small{display:block;color:var(--muted);margin-top:4px}.tag-canceled{color:#8b3d32;font-weight:700}.booking small{display:block;color:var(--muted);margin-top:4px}.danger{background:#8b3d32}.empty{color:var(--muted);font-size:14px;padding:16px 0}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.section-head .btn{padding:9px 12px;font-size:12px}.admin-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}#admin-content>.section-head{margin-bottom:6px}footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 0 8px}
+@media(max-width:720px){.shell{padding:14px}.topbar{align-items:flex-start;flex-direction:column}.nav{width:100%}.nav button{flex:1;padding:11px 8px}.layout{grid-template-columns:1fr}.hero{height:145px;padding:13px 15px}.hero>div{width:100%;max-width:none}.hero h2{font-size:16px}.hero p{left:12%;right:0;top:94px;font-size:11px}.admin-grid{grid-template-columns:1fr 1fr}.time-grid{grid-template-columns:repeat(3,1fr)}}
+.connection-banner{display:none;margin:-8px 0 18px;padding:10px 13px;border:1px solid var(--primary);border-radius:9px;background:var(--neutral);color:var(--ink);font-size:13px;line-height:1.4}.connection-banner.visible{display:block}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+ <button class="brand" id="brand-admin-access" type="button" aria-label="Acceso de administración"><img class="avatar" src="./barnaguer-logo.jpg" alt="Logotipo de BARNAGUER"><span><h1>BARNAGUER</h1><p>Tu Barbería en Santa Fé</p></span></button>
+ <nav class="nav" aria-label="Navegación"><button id="tab-book" class="active" type="button">Reservar turno</button><button id="tab-services" type="button">Servicios</button></nav>
+</header>
+<div id="connection-status" class="connection-banner" role="status" aria-live="polite">Sin conexión a Internet. Puedes consultar la información guardada, pero las reservas y la administración requieren conexión.</div>
+<section class="hero"><div><h2 id="hero-title">Reserva tu próximo turno</h2><p id="hero-subtitle">Elige el día y el horario que mejor te convenga.</p></div></section>
+<main id="booking-view">
+ <div class="layout">
+  <section class="panel">
+   <h3>1. Selecciona el día</h3><div id="dates" class="date-list"></div>
+   <p class="note">Puedes reservar para hoy, mañana o pasado mañana. Los domingos no hay atención.</p>
+   <h3 style="margin-top:22px">2. Elige un horario</h3><div id="times" class="time-grid"></div>
+   <div id="availability-note" class="note" style="margin-top:12px">Selecciona una fecha para consultar los horarios.</div>
+  </section>
+  <section class="panel">
+   <h3>3. Tus datos</h3>
+   <section class="booking-summary" aria-live="polite" aria-atomic="true">
+    <p class="booking-summary-title">Resumen de tu reserva</p>
+    <div class="booking-summary-details">
+     <div class="booking-summary-item"><span>DÍA</span><strong id="summary-date">Selecciona una fecha</strong></div>
+     <div class="booking-summary-item"><span>HORA</span><strong id="summary-time">Selecciona un horario</strong></div>
+    </div>
+   </section>
+   <form id="booking-form">
+    <div class="field"><label for="client-name">Nombre</label><input id="client-name" autocomplete="name" required maxlength="80" placeholder="Tu nombre"></div>
+    <div class="field"><label for="client-phone">Teléfono</label><input id="client-phone" type="tel" autocomplete="tel" required maxlength="30" placeholder="Tu número de teléfono"></div>
+    <button class="btn primary full" type="submit">Confirmar reserva</button>
+    <p class="note">Si estás sin conexión, la confirmación depende de recuperarla para verificar la disponibilidad real.</p>
+   </form>
+   <div id="booking-status" aria-live="polite"></div>
+   <p class="note">Tu reserva quedará registrada de forma segura en la agenda online de BARNAGUER.</p>
+  </section>
+ </div>
+</main>
+<main id="services-view" class="hidden">
+  <section class="panel services-panel">
+   <div class="services-heading"><span class="services-kicker">BARNAGUER</span><h2>SERVICIOS DE BARBERÍA</h2><span class="services-rule"></span></div>
+   <div class="services-list">
+    <div class="service-row"><span>Línea a Navaja</span><strong>100</strong></div>
+    <div class="service-row"><span>Cejas</span><strong>200</strong></div>
+    <div class="service-row"><span>Barba</span><strong>400</strong></div>
+    <div class="service-row service-featured"><span>Corte de Cabello</span><strong>800</strong></div>
+    <div class="service-row"><span>Corte + Barba</span><strong>1200</strong></div>
+    <div class="service-row"><span>Corte + Barba + Cejas</span><strong>1400</strong></div>
+    <div class="service-row"><span>Domicilio</span><strong>+2000</strong></div>
+   </div>
+   <p class="services-thanks">Gracias por preferirnos</p>
+   <a class="btn primary services-contact" href="https://wa.me/5354789515" target="_blank" rel="noopener noreferrer">Para contactar por WhatsApp toque aquí</a>
+  </section>
+ </main>
+<main id="admin-view" class="hidden">
+ <section id="admin-login-wrap" class="panel">
+  <h3>Acceso de administración</h3>
+  <p class="note">Inicia sesión con la cuenta autorizada de BARNAGUER.</p>
+  <form id="admin-login-form">
+   <div class="field"><label for="admin-email">Correo electrónico</label><input id="admin-email" type="email" autocomplete="username" required value="barnaguer@gmail.com"></div>
+   <div class="field"><label for="admin-password">Contraseña</label><input id="admin-password" type="password" autocomplete="current-password" required></div>
+   <button class="btn primary full" id="admin-login-submit" type="submit">Iniciar sesión</button>
+  </form><div id="admin-login-status" aria-live="polite"></div>
+ </section>
+ <section id="admin-content" class="panel hidden">
+  <div class="section-head"><h3>Panel de administración</h3><div class="admin-actions"><button class="btn" id="new-booking" type="button">Registrar cliente</button><button class="btn" id="admin-logout" type="button">Cerrar sesión</button></div></div>
+  <div class="admin-grid"><div class="stat"><span>Turnos registrados</span><strong id="stat-total">0</strong></div><div class="stat"><span>Turnos de hoy</span><strong id="stat-today">0</strong></div><div class="stat"><span>Clientes registrados</span><strong id="stat-clients">0</strong></div><div class="stat"><span>Próximos espacios libres</span><strong id="stat-free">0</strong></div></div>
+  <div id="alarm-controls" class="stat" style="margin:16px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+   <div><strong>Alarmas de turnos</strong><p class="note" id="alarm-status" style="margin:5px 0 0">Recibe un aviso sonoro un minuto antes de cada turno.</p></div>
+   <label style="display:flex;align-items:center;gap:9px;font-weight:600"><input id="alarm-enabled" type="checkbox"> Activar alarmas</label>
+  </div>
+  <div id="admin-form-wrap" class="hidden">
+   <h3>Registrar turno manualmente</h3>
+   <form id="admin-form">
+    <div class="field"><label for="admin-name">Nombre del cliente</label><input id="admin-name" required maxlength="80"></div>
+    <div class="field"><label for="admin-phone">Teléfono</label><input id="admin-phone" type="tel" required maxlength="30"></div>
+    <div class="field"><label for="admin-date">Fecha</label><input id="admin-date" type="date" required></div>
+    <div class="field"><label for="admin-time">Horario</label><select id="admin-time" required style="padding:12px;border:1px solid var(--line);border-radius:9px"></select></div>
+    <button class="btn primary" type="submit">Guardar turno</button> <button class="btn" id="close-admin-form" type="button">Cancelar</button>
+   </form><hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+  </div>
+  <h3>Reservas registradas</h3>
+  <input id="booking-search" class="client-search" type="search" placeholder="Buscar reserva por nombre o teléfono" aria-label="Buscar reservas por nombre o teléfono">
+  <select id="booking-status-filter" class="client-search" aria-label="Filtrar reservas por estado" style="margin-top:-4px"><option value="all">Mostrar todas las reservas</option><option value="confirmed">Solo confirmadas</option><option value="canceled">Solo canceladas</option></select>
+  <div id="booking-list"></div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
+  <div class="section-head"><h3>Historial de clientes</h3></div>
+  <p class="note">Puedes preparar individualmente el contacto de cada cliente y guardarlo en tu cuenta de Google.</p>
+  <input id="client-search" class="client-search" type="search" placeholder="Buscar por código, nombre o teléfono">
+  <select id="client-rating-filter" class="client-search" aria-label="Filtrar clientes por clasificación" style="margin-top:-4px"><option value="all">Mostrar todos los clientes</option><option value="10">Clasificación 10</option><option value="9">Clasificación 09</option><option value="8">Clasificación 08</option><option value="7">Bloqueados (07)</option></select>
+  <select id="client-sort" class="client-search" aria-label="Ordenar clientes" style="margin-top:-4px"><option value="next">Ordenar: próxima visita</option><option value="visits">Ordenar: más visitas</option><option value="name">Ordenar: nombre A-Z</option></select>
+  <div id="client-list"></div>
+  <div id="client-history" class="hidden" style="margin-top:18px;background:#fff;border-radius:12px;padding:16px"></div>
+ </section>
+</main>
+<footer>BARNAGUER · Tu Barbería en Santa Fé</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+const SUPABASE_URL="https://kxrsnlttqwneqgvwwclq.supabase.co";
+const SUPABASE_KEY="sb_publishable_jNRVDDZX73NuPZt190O9vw_q8e0Lt37";
+const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
+const TIMES=["10:00 AM","10:45 AM","11:30 AM","12:30 PM","1:15 PM","2:00 PM","2:45 PM","3:30 PM","4:30 PM","5:15 PM","6:00 PM"];
+function normalizeSlotTime(value){
+ if(typeof value!=="string")return "";
+ const match=value.trim().toUpperCase().match(/^(\d{1,2}):(\d{2})(?::\d{2}(?:\.\d+)?)?\s*(AM|PM)?$/);
+ if(!match)return "";
+ let hour=Number(match[1]);const minute=Number(match[2]);const suffix=match[3];
+ if(minute>59)return "";
+ if(suffix){if(hour<1||hour>12)return "";if(suffix==="AM"&&hour===12)hour=0;else if(suffix==="PM"&&hour!==12)hour+=12;}
+ else if(hour>23)return "";
+ const labelHour=hour%12||12;
+ const label=labelHour+":"+pad(minute)+" "+(hour>=12?"PM":"AM");
+ return TIMES.includes(label)?label:"";
+}
+function normalizeSlotRows(rows){
+ return [...new Set((rows||[]).map(row=>normalizeSlotTime(typeof row==="string"?row:row?.booking_time)).filter(Boolean))];
+}
+let selectedDate="",selectedTime="",adminSession=null,bookedSlots=[],blockedSlots=[],allClients=[],cachedBookings=[],availabilityIsStale=false;
+let adminRenderRequest=0,slotsRequestId=0;
+let googleTokenClient=null,googleAccessToken="",googleTokenExpiresAt=0,googleConsentRequested=false,googlePendingSave=null;
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,"0");
+const dateKey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const fromKey=s=>{const p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2])};
+const labelDate=d=>{const weekday=new Intl.DateTimeFormat("es",{weekday:"short"}).format(d).replace(/\./g,"");const day=new Intl.DateTimeFormat("es",{day:"2-digit"}).format(d);const month=new Intl.DateTimeFormat("es",{month:"short"}).format(d).replace(/\./g,"");return `${weekday} ${day} ${month}`.toUpperCase()};
+const toMinutes=t=>{const m=t.match(/(\d+):(\d+)\s(AM|PM)/);let h=Number(m[1])%12;if(m[3]==="PM")h+=12;return h*60+Number(m[2])};
+let today=new Date();today.setHours(0,0,0,0);
+function dates(){return [0,1,2].map(i=>{const d=new Date(today);d.setDate(today.getDate()+i);return d})}
+function i18nDay(d){if(dateKey(d)===dateKey(today))return "HOY";const x=new Date(today);x.setDate(today.getDate()+1);return dateKey(d)===dateKey(x)?"MAÑANA":"PASADO MAÑANA"}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function status(id,msg){$(id).innerHTML='<div class="status">'+esc(msg)+'</div>'}
+function updateBookingSummary(){
+ $("summary-date").textContent=selectedDate?labelDate(fromKey(selectedDate)):"Selecciona una fecha";
+ $("summary-time").textContent=selectedTime||"Selecciona un horario";
+}
+const DRAFT_KEY="barnaguer-booking-draft";
+function saveBookingDraft(){
+ try{localStorage.setItem(DRAFT_KEY,JSON.stringify({name:$("client-name").value,phone:$("client-phone").value,date:selectedDate,time:selectedTime}))}catch(error){}
+}
+function restoreBookingDraft(){
+ try{
+  const draft=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null");
+  if(!draft)return;
+  $("client-name").value=typeof draft.name==="string"?draft.name.slice(0,80):"";
+  $("client-phone").value=typeof draft.phone==="string"?draft.phone.slice(0,30):"";
+  if(typeof draft.date==="string"&&dates().some(d=>dateKey(d)===draft.date)&&fromKey(draft.date).getDay()!==0){
+   selectedDate=draft.date;selectedTime=typeof draft.time==="string"&&TIMES.includes(draft.time)?draft.time:"";
+   drawDates();drawTimes();
+  }
+ }catch(error){}
+}
+$("client-name").addEventListener("input",saveBookingDraft);
+$("client-phone").addEventListener("input",saveBookingDraft);
+window.addEventListener("pagehide",saveBookingDraft);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveBookingDraft();else refreshCurrentDate()});
+window.addEventListener("focus",refreshCurrentDate);
+async function loadSlots(){
+ if(!selectedDate)return;
+ const requestId=++slotsRequestId;
+ const requestedDate=selectedDate;
+ const cacheKey="barnaguer-booked-slots-"+requestedDate;
+ blockedSlots=[];
+ const readCache=()=>{try{const cached=JSON.parse(localStorage.getItem(cacheKey)||"[]");return Array.isArray(cached)?[...new Set(cached.filter(t=>TIMES.includes(t)))]:[]}catch(error){return []}};
+ if(!db||!navigator.onLine){
+  bookedSlots=readCache();
+  availabilityIsStale=true;drawTimes();
+  $("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";
+  return;
+ }
+ bookedSlots=readCache();
+ availabilityIsStale=true;
+ drawTimes();
+ $("availability-note").textContent=bookedSlots.length?"Actualizando disponibilidad...":"Consultando horarios...";
+ try{
+  const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:requestedDate});
+  if(error)throw error;
+  if(requestId!==slotsRequestId||selectedDate!==requestedDate)return;
+  const freshSlots=normalizeSlotRows(data);
+  let freshBlocked=[];
+  if(adminSession){
+   const {data:blockedData,error:blockedError}=await db.from("blocked_slots").select("booking_time").eq("booking_date",requestedDate);
+   if(blockedError)throw blockedError;
+   freshBlocked=normalizeSlotRows(blockedData);
+  }
+  try{localStorage.setItem(cacheKey,JSON.stringify(freshSlots))}catch(storageError){}
+  bookedSlots=freshSlots;
+  blockedSlots=freshBlocked;
+  availabilityIsStale=false;drawTimes();
+ }catch(error){
+  if(requestId!==slotsRequestId||selectedDate!==requestedDate)return;
+  availabilityIsStale=true;drawTimes();
+  $("availability-note").textContent="No se pudo actualizar la disponibilidad. Se muestran los últimos horarios guardados; pueden estar desactualizados.";
+ }
+}
+function drawDates(){
+ updateBookingSummary();
+ const wrap=$("dates");wrap.innerHTML="";
+ dates().forEach(d=>{const k=dateKey(d),b=document.createElement("button");b.type="button";b.className="date-option"+(selectedDate===k?" selected":"");b.disabled=d.getDay()===0;b.innerHTML="<strong>"+i18nDay(d)+"</strong><span>"+labelDate(d)+"</span>";b.onclick=()=>{selectedDate=k;selectedTime="";saveBookingDraft();drawDates();loadSlots()};wrap.appendChild(b)});
+}
+async function refreshCurrentDate(){
+ if(refreshCurrentDate.running)return;
+ refreshCurrentDate.running=true;
+ try{
+  const current=new Date();current.setHours(0,0,0,0);
+  const changed=dateKey(current)!==dateKey(today);
+  if(changed){
+   today.setTime(current.getTime());
+   if(selectedDate&&!dates().some(d=>dateKey(d)===selectedDate)){selectedDate="";selectedTime="";bookedSlots=[]}
+  }
+  if(!selectedDate){const next=dates().find(d=>d.getDay()!==0);if(next)selectedDate=dateKey(next)}
+  drawDates();drawTimes();saveBookingDraft();
+  if($("admin-date")){$("admin-date").min=dateKey(today);const last=new Date(today);last.setDate(last.getDate()+30);$("admin-date").max=dateKey(last)}
+  await loadSlots();
+  await cacheUpcomingSlots();
+  if(adminSession)await renderAdmin();
+ }finally{
+  refreshCurrentDate.running=false;
+ }
+}
+async function toggleAdminSlot(date,time,isBlocked){
+ if(!adminSession)return;
+ if(!db||!navigator.onLine){alert("Necesitas conexión a Internet para administrar los horarios.");return}
+ let booking=null;
+ try{
+  const {data,error}=await db.from("bookings").select("id,customer_name").eq("booking_date",date).eq("booking_time",time).eq("status","confirmed").maybeSingle();
+  if(error)throw error;
+  booking=data;
+ }catch(error){alert("No se pudo comprobar si existe una reserva en ese horario. "+(error.message||""));return}
+ const question=isBlocked
+  ?"¿Desbloquear el horario "+time+" del "+labelDate(fromKey(date))+" para volver a ofrecerlo?"
+  :booking
+   ?"Este horario tiene una reserva confirmada a nombre de "+booking.customer_name+". ¿Cancelar esa cita y bloquear el horario?"
+   :"¿Bloquear el horario "+time+" del "+labelDate(fromKey(date))+"?";
+ if(!confirm(question))return;
+ try{
+  const {data,error}=await db.rpc("admin_toggle_blocked_slot",{p_booking_date:date,p_booking_time:time});
+  if(error)throw error;
+  if(data==="blocked")alert(booking?"La cita se canceló y el horario quedó bloqueado.":"Horario bloqueado correctamente.");
+  else if(data==="unblocked")alert("Horario desbloqueado. Ya está disponible para nuevas reservas.");
+  else alert("La operación terminó, pero no se recibió una confirmación reconocible. Actualizaremos la agenda.");
+  if(selectedTime===time&&selectedDate===date){selectedTime="";saveBookingDraft()}
+  if(selectedDate===date)await loadSlots();
+  await cacheUpcomingSlots();
+  if(adminSession)await renderAdmin();
+ }catch(error){alert("No se pudo cambiar el estado del horario: "+(error.message||"Comprueba la conexión e inténtalo de nuevo."))}
+}
+function drawTimes(){
+ updateBookingSummary();
+ const wrap=$("times");wrap.innerHTML="";
+ if(!selectedDate){$("availability-note").textContent="Selecciona una fecha para consultar los horarios.";return}
+ const day=fromKey(selectedDate),now=new Date();let free=0;
+ TIMES.forEach(t=>{
+  const taken=bookedSlots.includes(t),isBlocked=blockedSlots.includes(t),tooSoon=selectedDate===dateKey(today)&&toMinutes(t)<=(now.getHours()*60+now.getMinutes()+60);
+  const b=document.createElement("button");b.type="button";
+  b.className="time-option"+(selectedTime===t?" selected":"")+(isBlocked?" admin-blocked":taken&&!isBlocked?" admin-booked":"");
+  b.textContent=t;
+  b.disabled=(!adminSession&&(taken||tooSoon))||day.getDay()===0;
+  if(!taken&&!tooSoon&&day.getDay()!==0)free++;
+  b.title=isBlocked?"Bloqueado por administración. Mantén pulsado para desbloquear.":taken?"Horario reservado. Mantén pulsado para cancelar y bloquear.":tooSoon?"Se requiere al menos una hora de anticipación":adminSession?"Mantén pulsado para bloquear este horario":"";
+  let pressTimer=null,longPressTriggered=false;
+  const clearPress=()=>{if(pressTimer!==null){clearTimeout(pressTimer);pressTimer=null}};
+  if(adminSession){
+   b.addEventListener("pointerdown",event=>{
+    if(event.button!==undefined&&event.button!==0)return;
+    clearPress();
+    pressTimer=setTimeout(()=>{pressTimer=null;longPressTriggered=true;toggleAdminSlot(selectedDate,t,isBlocked)},650);
+   });
+   ["pointerup","pointercancel","pointerleave"].forEach(name=>b.addEventListener(name,clearPress));
+   b.addEventListener("contextmenu",event=>event.preventDefault());
+  }
+  b.onclick=event=>{
+   if(longPressTriggered){event.preventDefault();longPressTriggered=false;return}
+   if(adminSession&&(taken||tooSoon||isBlocked))return;
+   selectedTime=t;saveBookingDraft();drawTimes();
+  };
+  wrap.appendChild(b);
+ });
+ if(!availabilityIsStale)$("availability-note").textContent=free+" horarios disponibles. Los descansos están contemplados en la agenda."+(adminSession?" Como administrador, mantén pulsado un horario para bloquearlo o desbloquearlo.":"");
+}
+async function cacheUpcomingSlots(){
+ if(!db||!navigator.onLine)return;
+ if(cacheUpcomingSlots.running){cacheUpcomingSlots.pending=true;return}
+ cacheUpcomingSlots.running=true;
+ try{
+  const pending=dates().filter(d=>d.getDay()!==0&&dateKey(d)!==selectedDate);
+  await Promise.all(pending.map(async d=>{
+   const key=dateKey(d),cacheKey="barnaguer-booked-slots-"+key;
+   try{
+    const {data,error}=await db.rpc("get_booked_slots",{p_booking_date:key});
+    if(error||!navigator.onLine)return;
+    const freshSlots=normalizeSlotRows(data);
+    localStorage.setItem(cacheKey,JSON.stringify(freshSlots));
+   }catch(error){}
+  }));
+ }finally{
+  cacheUpcomingSlots.running=false;
+  if(cacheUpcomingSlots.pending&&db&&navigator.onLine){
+   cacheUpcomingSlots.pending=false;
+   cacheUpcomingSlots();
+  }
+ }
+}
+const ALARM_PREF_KEY="barnaguer-turn-alarms-enabled";
+function updateAlarmControls(){
+ const controls=$("alarm-controls");
+ if(!controls)return;
+ controls.classList.toggle("hidden",!window.BarnaguerNative);
+ $("alarm-enabled").checked=localStorage.getItem(ALARM_PREF_KEY)==="true";
+}
+function syncTurnAlarms(bookings){
+ const native=window.BarnaguerNative;
+ if(!native)return;
+ if(localStorage.getItem(ALARM_PREF_KEY)!=="true"){
+  native.cancelAlarms();
+  $("alarm-status").textContent="Alarmas desactivadas.";
+  return;
+ }
+ if(!native.hasNotificationPermission()){
+  $("alarm-status").textContent="Activa las notificaciones de BARNAGUER para recibir las alarmas.";
+  return;
+ }
+ if(!native.hasExactAlarmPermission()){
+  $("alarm-status").textContent="Autoriza las alarmas exactas en Android para poder programarlas.";
+  return;
+ }
+ const grouped=new Map();
+ (bookings||[]).filter(x=>x.status!=="canceled").forEach(x=>{
+  const parts=String(x.booking_date||"").split("-").map(Number);
+  const minutes=toMinutes(x.booking_time);
+  if(parts.length!==3||parts.some(n=>!Number.isFinite(n))||!Number.isFinite(minutes))return;
+  const startAt=new Date(parts[0],parts[1]-1,parts[2],0,minutes,0,0).getTime();
+  if(!Number.isFinite(startAt))return;
+  if(!grouped.has(x.booking_date))grouped.set(x.booking_date,[]);
+  grouped.get(x.booking_date).push({booking:x,startAt});
+ });
+ const alarms=[];
+ const ordinals=["1er","2do","3er","4to","5to"];
+ grouped.forEach(items=>{
+  items.sort((a,b)=>a.startAt-b.startAt);
+  items.forEach((entry,index)=>{
+   const triggerAt=entry.startAt-60000;
+   if(triggerAt<=Date.now())return;
+   const b=entry.booking;
+   alarms.push({
+    id:String(b.id),
+    triggerAt,
+    title:(ordinals[index]||String(index+1)+"º")+" Turno",
+    message:"Comienza a las "+b.booking_time+" · "+labelDate(fromKey(b.booking_date))
+   });
+  });
+ });
+ const ok=native.scheduleAlarms(JSON.stringify(alarms));
+ $("alarm-status").textContent=ok
+  ? alarms.length+" alarmas programadas. Sonarán un minuto antes de cada turno."
+  : "No se pudieron programar las alarmas. Revisa los permisos de Android.";
+}
+async function renderAdmin(){
+ if(!adminSession)return;
+ const requestId=++adminRenderRequest;
+ $("booking-list").innerHTML='<div class="empty">Cargando reservas...</div>';
+ let bookingResult,clientResult;
+ try{
+  [bookingResult,clientResult]=await Promise.all([
+   db.from("bookings").select("*").order("booking_date").order("booking_time"),
+   db.from("clients").select("*").order("customer_name")
+  ]);
+ }catch(error){
+  if(requestId!==adminRenderRequest||!adminSession)return;
+  $("booking-list").textContent="No se pudieron cargar las reservas. Comprueba tu conexión e inténtalo de nuevo.";
+  $("client-list").textContent="No se pudo cargar el historial de clientes.";
+  return;
+ }
+ if(requestId!==adminRenderRequest||!adminSession)return;
+ if(bookingResult.error){$("booking-list").textContent="No se pudieron cargar las reservas: "+bookingResult.error.message;return}
+ if(clientResult.error){$("client-list").textContent="No se pudo cargar el historial de clientes: "+clientResult.error.message;return}
+ const all=bookingResult.data||[],todayKey=dateKey(today);
+ cachedBookings=all;allClients=clientResult.data||[];
+ updateAlarmControls();syncTurnAlarms(all);
+ $("stat-clients").textContent=allClients.length;
+ const confirmed=all.filter(x=>x.status!=="canceled");
+ $("stat-total").textContent=confirmed.length;
+ $("stat-today").textContent=confirmed.filter(x=>x.booking_date===todayKey).length;
+ const upcoming=dates().map(dateKey);
+ $("stat-free").textContent=upcoming.reduce((n,k)=>n+TIMES.filter(t=>!confirmed.some(x=>x.booking_date===k&&x.booking_time===t)&&!(k===todayKey&&toMinutes(t)<=(new Date().getHours()*60+new Date().getMinutes()+60))&&fromKey(k).getDay()!==0).length,0);
+ const list=$("booking-list");list.innerHTML="";
+ if(!all.length){list.innerHTML='<div class="empty">Todavía no hay reservas registradas.</div>'}
+ const orderedBookings=[...all].sort((a,b)=>{
+  const aPast=a.booking_date<todayKey,bPast=b.booking_date<todayKey;
+  if(aPast!==bPast)return aPast?1:-1;
+  const dateOrder=a.booking_date.localeCompare(b.booking_date);
+  if(dateOrder!==0)return aPast?-dateOrder:dateOrder;
+  return a.booking_time.localeCompare(b.booking_time);
+ });
+ orderedBookings.forEach(x=>{
+  const item=document.createElement("div");item.className="booking";item.dataset.status=x.status==="canceled"?"canceled":"confirmed";
+  const info=document.createElement("div");
+  info.innerHTML="<strong>"+esc(x.customer_name)+"</strong><small>"+esc(x.customer_phone)+" · "+labelDate(fromKey(x.booking_date))+" · "+esc(x.booking_time)+" · "+(x.status==="canceled"?'<span class="tag-canceled">Cancelado</span>':"Confirmado")+"</small>";
+  const action=document.createElement("button");action.className="btn "+(x.status==="canceled"?"":"danger");action.type="button";action.textContent=x.status==="canceled"?"Reactivar":"Cancelar";
+  action.onclick=async()=>{
+   const next=x.status==="canceled"?"confirmed":"canceled";
+   if(next==="canceled"&&!confirm("¿Cancelar el turno de "+x.customer_name+"?"))return;
+   if(next==="confirmed"&&!confirm("¿Reactivar este turno?"))return;
+   if(action.disabled)return;
+   const originalText=action.textContent;action.disabled=true;action.textContent=next==="canceled"?"Cancelando...":"Reactivando...";
+   try{
+    if(!db||!navigator.onLine)throw new Error("No hay conexión a Internet.");
+    const {error}=await db.from("bookings").update({status:next}).eq("id",x.id);
+    if(error){
+     alert(error.code==="23505"?"No se puede reactivar: ese horario ya está ocupado.":"No se pudo actualizar: "+error.message);
+     return;
+    }
+    await renderAdmin();if(selectedDate===x.booking_date)await loadSlots();await cacheUpcomingSlots();
+   }catch(error){
+    alert("No se pudo completar la operación. Comprueba tu conexión e inténtalo de nuevo.");
+   }finally{
+    action.disabled=false;action.textContent=originalText;
+   }
+  };
+  item.append(info,action);list.appendChild(item);
+ });
+ filterBookingList();
+ drawClients();
+}
+function filterBookingList(){
+ const query=($("booking-search").value||"").trim().toLowerCase();
+ const state=$("booking-status-filter").value;
+ [...$("booking-list").children].forEach(item=>{
+  const matchesText=!query||item.textContent.toLowerCase().includes(query);
+  const matchesState=state==="all"||item.dataset.status===state;
+  item.hidden=!(matchesText&&matchesState);
+ });
+}
+function allBookingsForClient(id){return cachedBookings.filter(b=>b.customer_id===id)}
+ function clientCode(c){return "Clt-"+String(c.client_number).padStart(3,"0")+"-"+String(c.priority_rating??8).padStart(2,"0")}
+ function clientLabel(c){return clientCode(c)+" | "+c.customer_name}
+async function persistGoogleSaved(client){
+ const {error}=await db.from("clients").update({google_contact_saved:true}).eq("id",client.id);
+ if(error)throw new Error("Google ya tiene el contacto, pero BARNAGUER no pudo guardar ese estado: "+error.message);
+ client.google_contact_saved=true;
+}
+async function findGoogleContact(client,token){
+ const normalizePhone=value=>String(value||"").replace(/\D/g,"");
+ const query=encodeURIComponent(String(client.customer_phone));
+ const response=await fetch("https://people.googleapis.com/v1/people:searchContacts?query="+query+"&readMask=names,phoneNumbers",{
+  headers:{"Authorization":"Bearer "+token}
+ });
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(data.error?.message||"No se pudo comprobar si el contacto ya existe en Google.");
+ return (data.results||[]).map(x=>x.person).filter(p=>(p.phoneNumbers||[]).some(n=>normalizePhone(n.value)===normalizePhone(client.customer_phone)));
+}
+async function saveClientToGoogle(client,button,status){
+ if(!adminSession){status.textContent="Inicia sesión como administrador.";return}
+ if(!client.customer_name||!client.customer_phone){status.textContent="Falta el nombre o el teléfono del cliente.";return}
+ button.disabled=true;button.textContent="Comprobando Google...";
+ const saveOrFind=async token=>{
+  try{
+   const matches=await findGoogleContact(client,token);
+   if(matches.length){
+    await persistGoogleSaved(client);
+    status.textContent=matches.length>1?"Este teléfono ya aparece en varios contactos de Google. No creé otro.":"Este contacto ya estaba guardado en Google.";
+    button.textContent="Guardado en Google";button.classList.add("saved");button.disabled=true;return;
+   }
+   const parts=String(client.customer_name).trim().split(/\s+/);
+   const givenName=parts.shift()||"";
+   const familyName=parts.join(" ");
+   const response=await fetch("https://people.googleapis.com/v1/people:createContact?personFields=names,phoneNumbers",{
+    method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+    body:JSON.stringify({names:[{givenName:clientCode(client)+" | "+givenName,familyName}],phoneNumbers:[{value:String(client.customer_phone),type:"mobile"}]})
+   });
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(data.error?.message||"Google no pudo guardar el contacto.");
+   await persistGoogleSaved(client);
+   status.textContent="Contacto guardado en Google Contacts.";button.textContent="Guardado en Google";button.classList.add("saved");button.disabled=true;
+  }catch(error){status.textContent="No se pudo completar la operación: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}
+ };
+ if(googleAccessToken&&Date.now()<googleTokenExpiresAt-60000){await saveOrFind(googleAccessToken);return}
+ if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){status.textContent="Google todavía está cargando. Recarga la página e inténtalo de nuevo.";button.disabled=false;button.textContent="Guardar contacto";return}
+ try{
+  if(!googleTokenClient){
+   googleTokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:"611354308915-jg11vskaos1994l9ce9jaionuvndpf88.apps.googleusercontent.com",
+    scope:"https://www.googleapis.com/auth/contacts",
+    callback:async tokenResponse=>{
+     const pending=googlePendingSave;googlePendingSave=null;if(!pending)return;
+     if(tokenResponse.error||!tokenResponse.access_token){pending.status.textContent="Google no autorizó el acceso. "+(tokenResponse.error_description||tokenResponse.error||"");pending.button.disabled=false;if(pending.buttonText)pending.button.textContent=pending.buttonText;return}
+     googleAccessToken=tokenResponse.access_token;googleTokenExpiresAt=Date.now()+(Number(tokenResponse.expires_in)||3600)*1000;googleConsentRequested=true;await pending.handleToken(googleAccessToken);
+    }
+   });
+  }
+  googlePendingSave={handleToken:saveOrFind,button,status,buttonText:"Guardar contacto"};
+  googleTokenClient.requestAccessToken({prompt:""});
+ }catch(error){status.textContent="Error al iniciar Google: "+error.message;button.disabled=false;button.textContent="Guardar contacto"}
+}
+async function updateGoogleContact(client,token){
+ const normalizePhone=value=>String(value||"").replace(/\D/g,"");
+ const query=encodeURIComponent(String(client.customer_phone));
+ const searchResponse=await fetch("https://people.googleapis.com/v1/people:searchContacts?query="+query+"&readMask=names,phoneNumbers",{
+  headers:{"Authorization":"Bearer "+token}
+ });
+ const searchData=await searchResponse.json().catch(()=>({}));
+ if(!searchResponse.ok)throw new Error(searchData.error?.message||"No se pudo buscar el contacto en Google.");
+ const matches=(searchData.results||[]).map(x=>x.person).filter(p=>(p.phoneNumbers||[]).some(n=>normalizePhone(n.value)===normalizePhone(client.customer_phone)));
+ if(!matches.length)return "La clasificación cambió en BARNAGUER, pero no encontré el contacto en Google. Guarda primero ese contacto.";
+ if(matches.length>1)return "La clasificación cambió en BARNAGUER, pero hay varios contactos con ese teléfono. No actualicé Google para evitar modificar el contacto equivocado.";
+ const person=matches[0],parts=String(client.customer_name).trim().split(/\s+/),givenName=parts.shift()||"",familyName=parts.join(" ");
+ const response=await fetch("https://people.googleapis.com/v1/"+person.resourceName+":updateContact?updatePersonFields=names",{
+  method:"PATCH",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+  body:JSON.stringify({resourceName:person.resourceName,etag:person.etag,names:[{givenName:clientCode(client)+" | "+givenName,familyName}]})
+ });
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(data.error?.message||"Google no pudo actualizar el contacto.");
+ return "Clasificación actualizada en BARNAGUER y Google Contacts.";
+}
+function requestGoogleForRating(client,button,status){
+ const handleToken=async token=>{try{status.textContent=await updateGoogleContact(client,token)}catch(error){status.textContent="Clasificación guardada en BARNAGUER, pero Google no se actualizó: "+error.message}finally{button.disabled=false}};
+ if(googleAccessToken&&Date.now()<googleTokenExpiresAt-60000){handleToken(googleAccessToken);return}
+ if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){status.textContent="Clasificación guardada en BARNAGUER. Recarga la página para conectar con Google y actualizar el contacto.";button.disabled=false;return}
+ try{
+  if(!googleTokenClient){
+   googleTokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:"611354308915-jg11vskaos1994l9ce9jaionuvndpf88.apps.googleusercontent.com",
+    scope:"https://www.googleapis.com/auth/contacts",
+    callback:async tokenResponse=>{
+     const pending=googlePendingSave;googlePendingSave=null;if(!pending)return;
+     if(tokenResponse.error||!tokenResponse.access_token){pending.status.textContent="Google no autorizó el acceso. "+(tokenResponse.error_description||tokenResponse.error||"");pending.button.disabled=false;if(pending.buttonText)pending.button.textContent=pending.buttonText;return}
+     googleAccessToken=tokenResponse.access_token;googleTokenExpiresAt=Date.now()+(Number(tokenResponse.expires_in)||3600)*1000;googleConsentRequested=true;await pending.handleToken(googleAccessToken);
+    }
+   });
+  }
+  googlePendingSave={handleToken,button,status,buttonText:null};
+  googleTokenClient.requestAccessToken({prompt:""});
+ }catch(error){status.textContent="Clasificación guardada en BARNAGUER, pero no se pudo iniciar Google: "+error.message;button.disabled=false}
+}
+function drawClients(){
+ const q=($("client-search").value||"").trim().toLowerCase(),rating=$("client-rating-filter").value,wrap=$("client-list");
+ const visible=allClients.filter(c=>(clientLabel(c)+" "+c.customer_phone).toLowerCase().includes(q)&&(rating==="all"||Number(c.priority_rating??8)===Number(rating)));
+ const sort=$("client-sort")?.value||"next",todayKey=dateKey(today);
+ const visitStats=new Map(allClients.map(c=>{const active=allBookingsForClient(c.id).filter(v=>v.status!=="canceled");const future=active.filter(v=>v.booking_date>=todayKey).sort((a,b)=>(a.booking_date+a.booking_time).localeCompare(b.booking_date+b.booking_time));const latest=active.sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time))[0];return [c.id,{count:active.length,next:future[0],latest}]}));
+ visible.sort((a,b)=>{const A=visitStats.get(a.id),B=visitStats.get(b.id);if(sort==="name")return String(a.customer_name||"").localeCompare(String(b.customer_name||""),"es");if(sort==="visits")return B.count-A.count||String(a.customer_name||"").localeCompare(String(b.customer_name||""),"es");if(A.next&&B.next)return (A.next.booking_date+A.next.booking_time).localeCompare(B.next.booking_date+B.next.booking_time);if(A.next)return -1;if(B.next)return 1;return (B.latest?.booking_date||"").localeCompare(A.latest?.booking_date||"")||String(a.customer_name||"").localeCompare(String(b.customer_name||""),"es")});
+ wrap.innerHTML="";
+ if(!visible.length){wrap.innerHTML='<div class="empty">No hay clientes que coincidan con la búsqueda.</div>';return}
+ visible.forEach(c=>{
+  const card=document.createElement("div");card.className="client-card";
+  const visits=allBookingsForClient(c.id);
+  card.innerHTML="<strong>"+esc(clientLabel(c))+"</strong><small>"+esc(c.customer_phone)+" · "+visits.filter(v=>v.status!=="canceled").length+" turnos confirmados · "+visits.length+" registros en historial</small>";
+  const clientRating=Number(c.priority_rating??8);
+  card.innerHTML+="<small><strong>Clasificación:</strong> "+(clientRating===7?"07 · Bloqueado":String(clientRating).padStart(2,"0"))+"</small>";
+  const activeVisits=visits.filter(v=>v.status!=="canceled"),todayKey=dateKey(today);
+  const nextVisit=activeVisits.filter(v=>v.booking_date>=todayKey).sort((a,b)=>(a.booking_date+a.booking_time).localeCompare(b.booking_date+b.booking_time))[0];
+  const lastVisit=activeVisits.sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time))[0];
+  if(nextVisit)card.innerHTML+="<small><strong>Próximo turno:</strong> "+labelDate(fromKey(nextVisit.booking_date))+" · "+esc(nextVisit.booking_time)+"</small>";
+  else if(lastVisit)card.innerHTML+="<small><strong>Último turno:</strong> "+labelDate(fromKey(lastVisit.booking_date))+" · "+esc(lastVisit.booking_time)+"</small>";
+  const actions=document.createElement("div");actions.className="client-actions";
+  const phoneDigits=String(c.customer_phone||"").replace(/\\D/g,"");
+  if(phoneDigits){const whatsappBtn=document.createElement("a");whatsappBtn.className="btn";whatsappBtn.textContent="WhatsApp";whatsappBtn.href="https://wa.me/"+phoneDigits+"?text="+encodeURIComponent("Hola "+clientLabel(c)+", te contacto desde BARNAGUER.");whatsappBtn.target="_blank";whatsappBtn.rel="noopener noreferrer";actions.appendChild(whatsappBtn)}
+  const btn=document.createElement("button");btn.type="button";btn.className="btn";btn.textContent="Ver historial";btn.onclick=()=>showClientHistory(c);
+  const rebookBtn=document.createElement("button");rebookBtn.type="button";rebookBtn.className="btn";rebookBtn.textContent="Registrar nuevo turno";rebookBtn.onclick=()=>{const wrap=$("admin-form-wrap");$("admin-form").reset();$("admin-name").value=c.customer_name||"";$("admin-phone").value=c.customer_phone||"";wrap.classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{const d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("");wrap.scrollIntoView({behavior:"smooth",block:"start"});};
+  const contactBtn=document.createElement("button");contactBtn.type="button";contactBtn.className="btn"+(c.google_contact_saved?" saved":"");contactBtn.textContent=c.google_contact_saved?"Guardado en Google":"Guardar contacto";contactBtn.disabled=!!c.google_contact_saved;
+  const contactStatus=document.createElement("small");contactStatus.className="note";contactStatus.setAttribute("aria-live","polite");
+  contactBtn.onclick=()=>saveClientToGoogle(c,contactBtn,contactStatus);
+  const ratingWrap=document.createElement("label");ratingWrap.className="note";ratingWrap.style.display="inline-flex";ratingWrap.style.alignItems="center";ratingWrap.style.gap="6px";ratingWrap.style.marginTop="5px";ratingWrap.textContent="Calificación";const ratingSelect=document.createElement("select");ratingSelect.setAttribute("aria-label","Calificación del cliente");ratingSelect.style.padding="8px";ratingSelect.style.border="1px solid var(--line)";ratingSelect.style.borderRadius="8px";[7,8,9,10].forEach(n=>{const option=document.createElement("option");option.value=String(n);option.textContent=n===7?"07 · Bloqueado":String(n).padStart(2,"0");option.selected=Number(c.priority_rating??8)===n;ratingSelect.appendChild(option)});ratingSelect.onchange=async()=>{
+  const previous=Number(c.priority_rating??8),next=Number(ratingSelect.value);ratingSelect.disabled=true;
+  try{
+   if(!db||!navigator.onLine)throw new Error("No hay conexión a Internet.");
+   const {error}=await db.from("clients").update({priority_rating:next}).eq("id",c.id);
+   if(error)throw error;
+   c.priority_rating=next;drawClients();
+   const currentCard=Array.from(wrap.children).find(el=>el.querySelector("strong")?.textContent===clientLabel(c));
+   const note=currentCard?.querySelector('[aria-live="polite"]');
+   const select=currentCard?.querySelector('select[aria-label="Calificación del cliente"]');
+   if(note&&select){select.disabled=true;requestGoogleForRating(c,select,note)}
+  }catch(error){
+   alert("No se pudo actualizar la calificación: "+(error.message||"Comprueba tu conexión e inténtalo de nuevo."));
+   ratingSelect.value=String(previous);ratingSelect.disabled=false;
+  }
+ };ratingWrap.appendChild(ratingSelect);actions.append(btn,rebookBtn,contactBtn);card.appendChild(actions);card.appendChild(ratingWrap);card.appendChild(contactStatus);wrap.appendChild(card);
+ });
+}
+function showClientHistory(c){
+ const panel=$("client-history");panel.classList.remove("hidden");
+ const history=allBookingsForClient(c.id).sort((a,b)=>(b.booking_date+b.booking_time).localeCompare(a.booking_date+a.booking_time));
+ const activeHistory=history.filter(v=>v.status!=="canceled");
+ const todayKey=dateKey(today);
+ const upcoming=activeHistory.filter(v=>v.booking_date>=todayKey).sort((a,b)=>(a.booking_date+a.booking_time).localeCompare(b.booking_date+b.booking_time))[0];
+ const latest=activeHistory[0];
+ panel.innerHTML="<div class='section-head'><h3>"+esc(clientLabel(c))+"</h3><button id='close-client-history' class='btn' type='button'>Cerrar</button></div><p class='note'>"+esc(c.customer_phone)+"</p>";
+ if(upcoming){panel.innerHTML+="<p class='note'><strong>Próximo turno:</strong> "+labelDate(fromKey(upcoming.booking_date))+" · "+esc(upcoming.booking_time)+"</p>"}else if(latest){panel.innerHTML+="<p class='note'><strong>Último turno confirmado:</strong> "+labelDate(fromKey(latest.booking_date))+" · "+esc(latest.booking_time)+"</p>"}
+ if(!history.length){panel.innerHTML+='<div class="empty">Este cliente todavía no tiene turnos registrados.</div>'}
+ history.forEach(v=>{
+  const row=document.createElement("div");row.className="history-entry";
+  row.innerHTML="<strong>"+labelDate(fromKey(v.booking_date))+" · "+esc(v.booking_time)+"</strong><small>"+(v.status==="canceled"?'<span class="tag-canceled">Cancelado</span>':"Confirmado")+"</small>";
+  panel.appendChild(row);
+ });
+ $("close-client-history").onclick=()=>panel.classList.add("hidden");
+}
+function show(which){
+ const admin=which==="admin",services=which==="services";
+ $("booking-view").classList.toggle("hidden",admin||services);$("admin-view").classList.toggle("hidden",!admin);$("services-view").classList.toggle("hidden",!services);
+ $("tab-book").classList.toggle("active",!admin&&!services);$("tab-services").classList.toggle("active",services);
+ $("hero-title").textContent=admin?"Administración de turnos":services?"Nuestros servicios":"Reserva tu próximo turno";
+ $("hero-subtitle").textContent=admin?"Consulta, registra y administra las reservas.":services?"Conoce los servicios de BARNAGUER y sus precios.":"Elige el día y el horario que mejor te convenga.";
+ if(admin)updateAdminView();
+}
+function updateAdminView(){
+ $("admin-login-wrap").classList.toggle("hidden",!!adminSession);
+ $("admin-content").classList.toggle("hidden",!adminSession);
+ if(adminSession)renderAdmin();
+}
+$("booking-form").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!selectedDate||!selectedTime){status("booking-status","Selecciona un día y un horario antes de confirmar.");return}
+ if(!dates().some(d=>dateKey(d)===selectedDate)||fromKey(selectedDate).getDay()===0||!TIMES.includes(selectedTime)){selectedTime="";saveBookingDraft();drawTimes();status("booking-status","La fecha o el horario seleccionado ya no es válido. Elige otro para continuar.");return}
+ if(selectedDate===dateKey(today)&&toMinutes(selectedTime)<=(new Date().getHours()*60+new Date().getMinutes()+60)){selectedTime="";saveBookingDraft();drawTimes();status("booking-status","Ese horario requiere al menos una hora de anticipación. Selecciona otro.");return}
+ if(!db||!navigator.onLine){status("booking-status","Sin conexión: no se puede confirmar la reserva. Conéctate a Internet o contacta por WhatsApp.");return}
+ const name=$("client-name").value.trim(),phone=$("client-phone").value.trim();
+ if(!name||!phone)return;
+ const bookingDate=selectedDate,bookingTime=selectedTime;
+ const submitButton=$("booking-form").querySelector('button[type="submit"]');
+ if(submitButton.disabled)return;
+ submitButton.disabled=true;submitButton.textContent="Confirmando...";
+ try{
+  const {error}=await db.from("bookings").insert({customer_name:name,customer_phone:phone,booking_date:bookingDate,booking_time:bookingTime});
+  if(error){
+   if(error.code==="23505"){selectedTime="";saveBookingDraft();status("booking-status","Ese horario acaba de ser reservado. Elige otro.");await loadSlots()}
+   else if(error.code==="P0001"&&/bloqueado/i.test(error.message||""))status("booking-status","No es posible realizar esta reserva, llame o escriba al +53 5478 9515");
+   else status("booking-status","No se pudo registrar la reserva. Inténtalo de nuevo.");
+   return;
+  }
+  status("booking-status","¡Tu turno quedó registrado para el "+labelDate(fromKey(bookingDate))+" a las "+bookingTime+". Te esperamos en BARNAGUER.");
+  $("booking-form").reset();selectedTime="";try{localStorage.removeItem(DRAFT_KEY)}catch(storageError){}
+  loadSlots();
+  cacheUpcomingSlots();
+ }catch(error){
+  status("booking-status","No se pudo completar la reserva. Comprueba tu conexión e inténtalo de nuevo.");
+ }finally{
+  submitButton.disabled=false;submitButton.textContent="Confirmar reserva";
+ }
+});
+$("admin-login-form").addEventListener("submit",async e=>{
+ e.preventDefault();if(!db||!navigator.onLine){status("admin-login-status","No hay conexión a Internet. Conéctate para acceder a la administración.");return}
+ const btn=$("admin-login-submit");if(btn.disabled)return;btn.disabled=true;btn.textContent="Ingresando...";
+ try{
+  const {data,error}=await db.auth.signInWithPassword({email:$("admin-email").value.trim(),password:$("admin-password").value});
+  if(error){status("admin-login-status","No se pudo iniciar sesión. Verifica el correo y la contraseña.");return}
+  adminSession=data.session;status("admin-login-status","");updateAdminView();if(selectedDate)await loadSlots();
+ }catch(error){
+  status("admin-login-status","No se pudo completar el acceso. Comprueba tu conexión e inténtalo de nuevo.");
+ }finally{
+  btn.disabled=false;btn.textContent="Iniciar sesión";
+ }
+});
+$("admin-logout").onclick=async()=>{
+ const btn=$("admin-logout");
+ btn.disabled=true;btn.textContent="Cerrando sesión...";
+ try{
+  const {error}=await db.auth.signOut();
+  if(error)throw error;
+  adminSession=null;blockedSlots=[];updateAdminView();if(selectedDate)await loadSlots();
+ }catch(error){
+  status("admin-login-status","No se pudo cerrar la sesión. Comprueba tu conexión e inténtalo de nuevo.");
+ }finally{
+  btn.disabled=false;btn.textContent="Cerrar sesión";
+ }
+};
+$("client-search").addEventListener("input",drawClients);
+$("client-rating-filter").addEventListener("change",drawClients);
+$("client-sort").addEventListener("change",drawClients);
+$("booking-search").addEventListener("input",filterBookingList);
+$("booking-status-filter").addEventListener("change",filterBookingList);
+$("alarm-enabled").addEventListener("change",()=>{
+ if($("alarm-enabled").checked){
+  localStorage.setItem(ALARM_PREF_KEY,"true");
+  if(!window.BarnaguerNative.hasNotificationPermission()){
+   $("alarm-status").textContent="Se solicitará permiso para mostrar las alarmas de BARNAGUER.";
+   window.BarnaguerNative.requestNotificationPermission();
+   return;
+  }
+  if(!window.BarnaguerNative.hasExactAlarmPermission()){
+   $("alarm-status").textContent="Se abrirán los ajustes de Android para autorizar las alarmas exactas.";
+   window.BarnaguerNative.requestExactAlarmPermission();
+   return;
+  }
+  syncTurnAlarms(cachedBookings);
+ }else{
+  localStorage.setItem(ALARM_PREF_KEY,"false");
+  window.BarnaguerNative.cancelAlarms();
+  $("alarm-status").textContent="Alarmas desactivadas.";
+ }
+});
+
+$("brand-admin-access").onclick=()=>show("admin");$("tab-book").onclick=()=>show("book");$("tab-services").onclick=()=>show("services");
+$("new-booking").onclick=()=>{$("admin-form-wrap").classList.remove("hidden");$("admin-date").min=dateKey(today);$("admin-date").value=dateKey(today);$("admin-date").max=(()=>{let d=new Date(today);d.setDate(d.getDate()+30);return dateKey(d)})();$("admin-time").innerHTML=TIMES.map(t=>'<option value="'+t+'">'+t+'</option>').join("")};
+$("close-admin-form").onclick=()=> $("admin-form-wrap").classList.add("hidden");
+$("admin-form").addEventListener("submit",async e=>{
+ e.preventDefault();const form=e.currentTarget,date=$("admin-date").value,time=$("admin-time").value;
+ if(!db||!navigator.onLine){alert("Sin conexión a Internet. El turno no se ha guardado. Recupera la conexión e inténtalo de nuevo.");return}
+ if(!$("admin-name").value.trim()||!$("admin-phone").value.trim()){alert("Introduce el nombre y el teléfono del cliente.");return}
+ const lastAllowed=new Date(today);lastAllowed.setDate(lastAllowed.getDate()+30);
+ if(!date||date<dateKey(today)||date>dateKey(lastAllowed)){alert("Selecciona una fecha entre hoy y los próximos 30 días.");return}
+ if(fromKey(date).getDay()===0){alert("Los domingos la barbería permanece cerrada.");return}
+ if(!TIMES.includes(time)){alert("Selecciona un horario válido.");return}
+ const submitButton=form.querySelector('button[type="submit"]');if(submitButton?.disabled)return;
+ const originalText=submitButton?.textContent;if(submitButton){submitButton.disabled=true;submitButton.textContent="Guardando..."}
+ try{
+  const {error}=await db.from("bookings").insert({customer_name:$("admin-name").value.trim(),customer_phone:$("admin-phone").value.trim(),booking_date:date,booking_time:time});
+  if(error){alert(error.code==="23505"?"Ese horario ya está reservado.":error.code==="P0001"&&/bloqueado/i.test(error.message||"")?"No es posible realizar esta reserva, llame o escriba al +53 5478 9515":"No se pudo guardar el turno: "+error.message);return}
+  form.reset();$("admin-form-wrap").classList.add("hidden");await renderAdmin();if(selectedDate===date)await loadSlots();await cacheUpcomingSlots();
+ }catch(error){alert("No se pudo guardar el turno. Comprueba la conexión e inténtalo de nuevo.")}
+ finally{if(submitButton){submitButton.disabled=false;submitButton.textContent=originalText}}
+});
+function updateConnectionStatus(){const banner=$("connection-status");if(!banner)return;const unavailable=!navigator.onLine||!db;banner.classList.toggle("visible",unavailable);banner.textContent=!navigator.onLine?"Sin conexión a Internet. Puedes consultar la información guardada, pero las reservas y la administración requieren conexión.":!db?"No se pudo cargar el servicio de reservas. La información de BARNAGUER sigue disponible; para reservar o administrar, recupera la conexión e inténtalo de nuevo.":"";}
+window.addEventListener("offline",updateConnectionStatus);
+window.addEventListener("online",updateConnectionStatus);
+updateConnectionStatus();
+window.addEventListener("online",async()=>{
+ if(selectedDate){
+  $("availability-note").textContent="Conexión restablecida. Comprobando disponibilidad...";
+  await loadSlots();
+  await cacheUpcomingSlots();
+  if(selectedTime&&bookedSlots.includes(selectedTime)){
+   selectedTime="";saveBookingDraft();drawTimes();
+   status("booking-status","Ese horario ya no está disponible. Selecciona otro para continuar.");
+  }
+ }
+ if(adminSession)await renderAdmin();
+});
+function init(){
+ restoreBookingDraft();drawDates();updateAdminView();
+ if(!selectedDate){const next=dates().find(d=>d.getDay()!==0);if(next){selectedDate=dateKey(next);drawDates();drawTimes()}}
+ if(window.location.hash==="#admin")show("admin");
+ if(!db){availabilityIsStale=true;$("availability-note").textContent="Sin conexión: se muestran horarios guardados como referencia. La disponibilidad puede haber cambiado; no se puede confirmar una reserva ahora.";return}
+ db.auth.getSession().then(async({data})=>{adminSession=data.session;updateAdminView();if(selectedDate)await loadSlots()}).catch(()=>{});
+ loadSlots();
+ cacheUpcomingSlots();
+}
+init();
+})();
+</script>
+<script>
+/* Sonido y vibración BARNAGUER para web y PWA. */
+(function () {
+  if (window.__barnaguerFeedbackInstalled) return;
+  window.__barnaguerFeedbackInstalled = true;
+
+  let audioContext = null;
+
+  function getAudioContext() {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+    try {
+      if (!audioContext) audioContext = new AudioCtx();
+      if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+      return audioContext;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function playScheduleClick() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(155, now);
+    oscillator.frequency.exponentialRampToValueAtTime(72, now + 0.055);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.24, now + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.08);
+  }
+
+  function playReservationSuccess() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [523.25, 659.25, 783.99].forEach((frequency, index) => {
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const start = now + index * 0.105;
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.16, start + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start(start);
+      oscillator.stop(start + 0.43);
+    });
+  }
+
+  function vibrateButton() {
+    try {
+      if (window.BarnaguerHaptics && typeof window.BarnaguerHaptics.vibrate === "function") {
+        window.BarnaguerHaptics.vibrate();
+      } else if (navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+    } catch (_) {}
+  }
+
+  document.addEventListener("click", function (event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('button,[role="button"],input[type="button"],input[type="submit"],input[type="reset"]');
+    if (!button) return;
+
+    vibrateButton();
+    const label = (button.innerText || button.value || button.getAttribute("aria-label") || "").trim();
+    if (/\d{1,2}:\d{2}|\b(?:AM|PM)\b/i.test(label)) playScheduleClick();
+  }, true);
+
+  let successVisible = false;
+  const successText = "¡Tu turno quedó registrado para el";
+  const successObserver = new MutationObserver(function () {
+    const pageText = document.body ? document.body.innerText : "";
+    const visible = pageText.toLowerCase().includes(successText.toLowerCase());
+    if (visible && !successVisible) playReservationSuccess();
+    successVisible = visible;
+  });
+  if (document.body) {
+    successObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  // Cuando se activa una versión nueva, limpia la caché nativa de Android
+  // y recarga la aplicación para mostrar inmediatamente el contenido actualizado.
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (window.BarnaguerUpdates && typeof window.BarnaguerUpdates.refreshAfterUpdate === "function") {
+      window.BarnaguerUpdates.refreshAfterUpdate();
+    } else {
+      window.location.reload();
+    }
+  });
+
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("./service-worker.js");
+      await registration.update();
+    } catch (error) {
+      console.error("No se pudo actualizar BARNAGUER:", error);
+    }
+  });
+}
+</script>
+</body></html>
