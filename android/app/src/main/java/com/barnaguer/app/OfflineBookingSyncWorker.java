@@ -33,7 +33,7 @@ public class OfflineBookingSyncWorker extends Worker {
                 if (isStopped()) return Result.retry();
                 HttpURLConnection connection = null;
                 try {
-                    URL endpoint = new URL(SUPABASE_URL + "/rest/v1/bookings");
+                    URL endpoint = new URL(SUPABASE_URL + "/rest/v1/bookings?on_conflict=client_request_id");
                     connection = (HttpURLConnection) endpoint.openConnection();
                     connection.setRequestMethod("POST");
                     connection.setConnectTimeout(15000);
@@ -42,9 +42,10 @@ public class OfflineBookingSyncWorker extends Worker {
                     connection.setRequestProperty("apikey", SUPABASE_KEY);
                     connection.setRequestProperty("Authorization", "Bearer " + SUPABASE_KEY);
                     connection.setRequestProperty("Content-Type", "application/json");
-                    connection.setRequestProperty("Prefer", "return=minimal");
+                    connection.setRequestProperty("Prefer", "resolution=ignore-duplicates,return=minimal");
 
                     JSONObject payload = new JSONObject();
+                    payload.put("client_request_id", booking.id);
                     payload.put("customer_name", booking.customerName);
                     payload.put("customer_phone", booking.customerPhone);
                     payload.put("booking_date", booking.bookingDate);
