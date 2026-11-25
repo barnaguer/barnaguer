@@ -4,13 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.content.Intent;
-import android.content.IntentSender;
-import com.google.android.gms.auth.api.identity.AuthorizationRequest;
-import com.google.android.gms.auth.api.identity.AuthorizationResult;
-import com.google.android.gms.auth.api.identity.Identity;
-import com.google.android.gms.common.api.Scope;
 import org.json.JSONObject;
-import java.util.Collections;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -24,8 +18,6 @@ import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
     private WebView webView;
-    private static final int GOOGLE_AUTH_REQUEST_CODE = 7103;
-    private boolean googleAuthInProgress = false;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,8 +126,18 @@ public class MainActivity extends Activity {
     }
 
     private class AlarmBridge {
-        @JavascriptInterface public void requestGoogleContactsAuthorization() {
-            runOnUiThread(() -> startGoogleContactsAuthorization());
+        @JavascriptInterface public void openGoogleContactsInBrowser() {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://barnaguer.github.io/barnaguer/#admin"));
+                    startActivity(intent);
+                } catch (Exception e) {
+                    android.widget.Toast.makeText(MainActivity.this,
+                        "No se pudo abrir el navegador. Abre BARNAGUER en Chrome para guardar el contacto.",
+                        android.widget.Toast.LENGTH_LONG).show();
+                }
+            });
         }
 
         @JavascriptInterface public boolean hasNotificationPermission() {
@@ -183,68 +185,6 @@ public class MainActivity extends Activity {
             grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             webView.post(() -> webView.evaluateJavascript(
                 "document.getElementById('alarm-enabled')?.dispatchEvent(new Event('change'))", null));
-        }
-    }
-
-    private void startGoogleContactsAuthorization() {
-        if (googleAuthInProgress) {
-            deliverGoogleAuthResult(null, "Ya hay una autorización de Google en curso.");
-            return;
-        }
-        googleAuthInProgress = true;
-        AuthorizationRequest request = AuthorizationRequest.builder()
-            .setRequestedScopes(Collections.singletonList(
-                new Scope("https://www.googleapis.com/auth/contacts")
-            ))
-            .build();
-
-        Identity.getAuthorizationClient(this).authorize(request)
-            .addOnSuccessListener(result -> {
-                if (result.hasResolution()) {
-                    try {
-                        startIntentSenderForResult(
-                            result.getPendingIntent().getIntentSender(),
-                            GOOGLE_AUTH_REQUEST_CODE, null, 0, 0, 0
-                        );
-                    } catch (IntentSender.SendIntentException e) {
-                        finishGoogleAuth(null, "No se pudo abrir la autorización de Google: " + e.getMessage());
-                    }
-                } else {
-                    finishGoogleAuth(result.getAccessToken(), null);
-                }
-            })
-            .addOnFailureListener(error ->
-                finishGoogleAuth(null, "Google no pudo iniciar la autorización: " + error.getMessage())
-            );
-    }
-
-    private void finishGoogleAuth(String token, String error) {
-        googleAuthInProgress = false;
-        deliverGoogleAuthResult(token, error);
-    }
-
-    private void deliverGoogleAuthResult(String token, String error) {
-        if (webView == null) return;
-        String tokenArg = token == null ? "null" : JSONObject.quote(token);
-        String errorArg = error == null ? "null" : JSONObject.quote(error);
-        String script = "if(window.__barnaguerGoogleAuthResult){window.__barnaguerGoogleAuthResult("
-            + tokenArg + "," + errorArg + ");}";
-        webView.post(() -> webView.evaluateJavascript(script, null));
-    }
-
-    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode != GOOGLE_AUTH_REQUEST_CODE) return;
-        if (resultCode != RESULT_OK || data == null) {
-            finishGoogleAuth(null, "Se canceló la autorización de Google.");
-            return;
-        }
-        try {
-            AuthorizationResult result =
-                Identity.getAuthorizationClient(this).getAuthorizationResultFromIntent(data);
-            finishGoogleAuth(result.getAccessToken(), null);
-        } catch (Exception e) {
-            finishGoogleAuth(null, "Google no autorizó el acceso: " + e.getMessage());
         }
     }
 

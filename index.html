@@ -469,9 +469,22 @@ async function findGoogleContact(client,token){
  if(!response.ok)throw new Error(data.error?.message||"No se pudo comprobar si el contacto ya existe en Google.");
  return (data.results||[]).map(x=>x.person).filter(p=>(p.phoneNumbers||[]).some(n=>normalizePhone(n.value)===normalizePhone(client.customer_phone)));
 }
+function openGoogleContactsInBrowser(status,button,mode){
+ const native=window.BarnaguerNative;
+ if(!native||typeof native.openGoogleContactsInBrowser!=="function")return false;
+ button.disabled=false;
+ if(mode==="save"){
+  status.textContent="Para guardar este contacto, BARNAGUER se abrirá en Chrome, donde Google ya funciona. Inicia sesión como administrador y pulsa «Guardar contacto» en este cliente.";
+ }else{
+  status.textContent="La calificación ya está guardada en BARNAGUER. Para sincronizarla con Google, se abrirá Chrome; inicia sesión y vuelve a seleccionar esa calificación.";
+ }
+ try{native.openGoogleContactsInBrowser();return true}
+ catch(error){status.textContent="No se pudo abrir Chrome. Abre BARNAGUER desde el navegador para guardar el contacto.";return true}
+}
 async function saveClientToGoogle(client,button,status){
  if(!adminSession){status.textContent="Inicia sesión como administrador.";return}
  if(!client.customer_name||!client.customer_phone){status.textContent="Falta el nombre o el teléfono del cliente.";return}
+ if(openGoogleContactsInBrowser(status,button,"save"))return;
  button.disabled=true;button.textContent="Comprobando Google...";
  const saveOrFind=async token=>{
   try{
@@ -533,6 +546,7 @@ async function updateGoogleContact(client,token){
  return "Clasificación actualizada en BARNAGUER y Google Contacts.";
 }
 function requestGoogleForRating(client,button,status){
+ if(openGoogleContactsInBrowser(status,button,"rating"))return;
  const handleToken=async token=>{try{status.textContent=await updateGoogleContact(client,token)}catch(error){status.textContent="Clasificación guardada en BARNAGUER, pero Google no se actualizó: "+error.message}finally{button.disabled=false}};
  if(googleAccessToken&&Date.now()<googleTokenExpiresAt-60000){handleToken(googleAccessToken);return}
  if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){status.textContent="Clasificación guardada en BARNAGUER. Recarga la página para conectar con Google y actualizar el contacto.";button.disabled=false;return}

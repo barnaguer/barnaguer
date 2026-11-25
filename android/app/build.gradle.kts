@@ -8,8 +8,8 @@ android {
         applicationId = "com.barnaguer.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.4.1"
+        versionCode = 6
+        versionName = "1.4.2"
     }
 
     signingConfigs {
@@ -42,7 +42,6 @@ tasks.named("preBuild").configure {
 
 dependencies {
     implementation("androidx.core:core:1.15.0")
-    implementation("com.google.android.gms:play-services-auth:22.0.0")
 }
 
 // The launcher bitmap is copied from the exact root logo asset before preBuild.
