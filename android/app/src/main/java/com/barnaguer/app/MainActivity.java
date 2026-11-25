@@ -300,8 +300,8 @@ public class MainActivity extends Activity {
 
     @Override protected void onDestroy() {
         if (webView != null) webView.destroy();
+        if (offlineDatabase != null) offlineExecutor.execute(() -> offlineDatabase.close());
         offlineExecutor.shutdown();
-        if (offlineDatabase != null) offlineDatabase.close();
         super.onDestroy();
     }
 }
