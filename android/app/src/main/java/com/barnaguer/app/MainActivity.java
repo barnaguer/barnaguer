@@ -13,15 +13,26 @@ import android.os.Vibrator;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import androidx.room.Room;
 import androidx.webkit.WebViewAssetLoader;
 import androidx.webkit.WebViewClientCompat;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends Activity {
     private WebView webView;
     private WebViewAssetLoader assetLoader;
+    private OfflineDatabase offlineDatabase;
+    private final ExecutorService offlineExecutor = Executors.newSingleThreadExecutor();
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        offlineDatabase = Room.databaseBuilder(getApplicationContext(), OfflineDatabase.class,
+            "barnaguer-offline.db").build();
         assetLoader = new WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .build();
@@ -107,10 +118,106 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new AlarmBridge(), "BarnaguerNative");
         webView.addJavascriptInterface(new HapticsBridge(), "BarnaguerHaptics");
         webView.addJavascriptInterface(new UpdatesBridge(), "BarnaguerUpdates");
+        webView.addJavascriptInterface(new OfflineBridge(), "BarnaguerOfflineNative");
         setContentView(webView);
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
+
+    private void sendOfflineResult(String callbackId, JSONObject result) {
+        if (webView == null || callbackId == null) return;
+        String script = "window.__barnaguerOfflineResult && window.__barnaguerOfflineResult(" +
+            JSONObject.quote(callbackId) + "," + result.toString() + ");";
+        webView.post(() -> webView.evaluateJavascript(script, null));
+    }
+
+    private class OfflineBridge {
+        @JavascriptInterface public void savePendingBooking(String json, String callbackId) {
+            offlineExecutor.execute(() -> {
+                JSONObject result = new JSONObject();
+                try {
+                    JSONObject input = new JSONObject(json);
+                    String name = input.optString("name", "").trim();
+                    String phone = input.optString("phone", "").trim();
+                    String date = input.optString("date", "").trim();
+                    String time = input.optString("time", "").trim();
+                    if (name.isEmpty() || phone.isEmpty() || date.isEmpty() || time.isEmpty()) {
+                        result.put("success", false);
+                        result.put("message", "Faltan datos para guardar la solicitud.");
+                    } else if (offlineDatabase.offlineDao().findPendingForSlot(date, time) != null) {
+                        result.put("success", false);
+                        result.put("message", "Ya existe una solicitud pendiente para ese horario en este dispositivo.");
+                    } else {
+                        String id = input.optString("id", "");
+                        if (id.isEmpty()) id = UUID.randomUUID().toString();
+                        PendingBooking booking = new PendingBooking(id, name, phone, date, time,
+                            "PENDIENTE", System.currentTimeMillis());
+                        offlineDatabase.offlineDao().insertPending(booking);
+                        result.put("success", true);
+                        result.put("id", id);
+                        result.put("status", "PENDIENTE");
+                        result.put("message", "Solicitud guardada y pendiente de confirmación.");
+                        OfflineSyncScheduler.schedule(MainActivity.this);
+                    }
+                } catch (Exception error) {
+                    try {
+                        result.put("success", false);
+                        result.put("message", "No se pudo guardar la solicitud en este dispositivo.");
+                    } catch (JSONException ignored) {}
+                }
+                sendOfflineResult(callbackId, result);
+            });
+        }
+
+        @JavascriptInterface public void cacheOccupiedSlots(String date, String json) {
+            offlineExecutor.execute(() -> {
+                try {
+                    JSONArray values = new JSONArray(json);
+                    OfflineDao dao = offlineDatabase.offlineDao();
+                    dao.clearCachedSlotsForDate(date);
+                    for (int i = 0; i < values.length(); i++) {
+                        String time = values.optString(i, "");
+                        if (!time.isEmpty()) dao.cacheOccupiedSlot(new CachedSlot(date, time));
+                    }
+                } catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface public void getCachedSlots(String date, String callbackId) {
+            offlineExecutor.execute(() -> {
+                JSONArray slots = new JSONArray(offlineDatabase.offlineDao().getOccupiedSlots(date));
+                JSONObject result = new JSONObject();
+                try {
+                    result.put("success", true);
+                    result.put("slots", slots);
+                } catch (JSONException ignored) {}
+                sendOfflineResult(callbackId, result);
+            });
+        }
+
+        @JavascriptInterface public void getRecentBookings(String callbackId) {
+            offlineExecutor.execute(() -> {
+                JSONArray rows = new JSONArray();
+                for (PendingBooking booking : offlineDatabase.offlineDao().getRecentBookings()) {
+                    JSONObject row = new JSONObject();
+                    try {
+                        row.put("id", booking.id);
+                        row.put("date", booking.bookingDate);
+                        row.put("time", booking.bookingTime);
+                        row.put("status", booking.status);
+                        row.put("createdAt", booking.createdAt);
+                        rows.put(row);
+                    } catch (JSONException ignored) {}
+                }
+                JSONObject result = new JSONObject();
+                try {
+                    result.put("success", true);
+                    result.put("bookings", rows);
+                } catch (JSONException ignored) {}
+                sendOfflineResult(callbackId, result);
+            });
+        }
+    }
 
     private class UpdatesBridge {
         @JavascriptInterface public void refreshAfterUpdate() {
@@ -193,6 +300,8 @@ public class MainActivity extends Activity {
 
     @Override protected void onDestroy() {
         if (webView != null) webView.destroy();
+        offlineExecutor.shutdown();
+        if (offlineDatabase != null) offlineDatabase.close();
         super.onDestroy();
     }
 }
