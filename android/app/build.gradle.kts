@@ -56,6 +56,9 @@ tasks.named("preBuild").configure {
 dependencies {
     implementation("androidx.core:core:1.15.0")
     implementation("androidx.webkit:webkit:1.12.1")
+    implementation("androidx.room:room-runtime:2.6.1")
+    annotationProcessor("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.work:work-runtime:2.9.1")
 }
 
 // The launcher bitmap is copied from the exact root logo asset before preBuild.
