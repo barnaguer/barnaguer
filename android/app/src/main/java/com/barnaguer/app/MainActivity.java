@@ -197,6 +197,13 @@ public class MainActivity extends Activity {
             });
         }
 
+        @JavascriptInterface public void retryPendingSync(String callbackId) {
+            OfflineSyncScheduler.schedule(MainActivity.this);
+            JSONObject result = new JSONObject();
+            try { result.put("success", true); } catch (JSONException ignored) {}
+            sendOfflineResult(callbackId, result);
+        }
+
         @JavascriptInterface public void getRecentBookings(String callbackId) {
             offlineExecutor.execute(() -> {
                 JSONArray rows = new JSONArray();
