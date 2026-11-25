@@ -33,6 +33,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         offlineDatabase = Room.databaseBuilder(getApplicationContext(), OfflineDatabase.class,
             "barnaguer-offline.db").build();
+        // Re-enqueue synchronization on app launch so saved pending requests are picked up.
+        OfflineSyncScheduler.schedule(this);
         assetLoader = new WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .build();
