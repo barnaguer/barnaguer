@@ -59,15 +59,24 @@ public class OfflineBookingSyncWorker extends Worker {
                     String response = readResponse(status >= 400
                         ? connection.getErrorStream() : connection.getInputStream());
 
-                    if (status >= 200 && status < 300) {
+                    String responseLower = response.toLowerCase();
+                    boolean duplicateRequest = responseLower.contains("client_request_id") &&
+                        (responseLower.contains("23505") || responseLower.contains("duplicate key"));
+                    boolean slotUnavailable = responseLower.contains("horario bloqueado") ||
+                        responseLower.contains("slot unavailable") ||
+                        responseLower.contains("horario no disponible") ||
+                        ((status == 409 || responseLower.contains("23505")) && !duplicateRequest);
+
+                    if ((status >= 200 && status < 300) || duplicateRequest) {
+                        // A retry may reach the server after the first attempt was already committed.
+                        // A duplicate idempotency key means this exact request already exists.
                         database.offlineDao().updateBookingStatus(booking.id, "CONFIRMADA");
                         database.offlineDao().cacheOccupiedSlot(new CachedSlot(booking.bookingDate, booking.bookingTime));
-                    } else if (status == 409 || response.contains("23505") ||
-                            response.contains("P0001") ||
-                            response.toLowerCase().contains("horario bloqueado")) {
+                    } else if (slotUnavailable) {
                         database.offlineDao().updateBookingStatus(booking.id, "NO_DISPONIBLE");
                         database.offlineDao().cacheOccupiedSlot(new CachedSlot(booking.bookingDate, booking.bookingTime));
-                    } else if (status == 401 || status == 403 || status >= 500) {
+                    } else if (status == 401 || status == 403 || status >= 500 ||
+                            responseLower.contains("p0001")) {
                         Log.w(TAG, "La sincronización debe reintentarse. HTTP " + status);
                         return Result.retry();
                     } else {
