@@ -43,6 +43,9 @@ tasks.register<Copy>("copyBarnaguerOfflineShell") {
     from(rootProject.file("../manifest.json"))
     from(rootProject.file("../barnaguer-logo.jpg"))
     from(rootProject.file("../barnaguer-banner.png"))
+    from(rootProject.file("../service-worker.js"))
+    from(rootProject.file("../icon-192.svg"))
+    from(rootProject.file("../icon-512.svg"))
     into(layout.projectDirectory.dir("src/main/assets"))
 }
 
