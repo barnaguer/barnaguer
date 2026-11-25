@@ -173,6 +173,17 @@ function callOfflineNative(method,...args){
   catch(error){offlineCallbacks.delete(callbackId);reject(error)}
  });
 }
+function refreshOfflineBookingStatus(){
+ if(!window.BarnaguerOfflineNative)return;
+ callOfflineNative("getRecentBookings").then(result=>{
+  if(!result.success||!Array.isArray(result.bookings))return;
+  const recent=result.bookings.find(item=>Date.now()-Number(item.createdAt||0)<86400000);
+  if(!recent)return;
+  if(recent.status==="PENDIENTE")status("booking-status","Tu solicitud para el "+labelDate(fromKey(recent.date))+" a las "+recent.time+" sigue PENDIENTE de confirmación.");
+  else if(recent.status==="CONFIRMADA")status("booking-status","¡Tu solicitud para el "+labelDate(fromKey(recent.date))+" a las "+recent.time+" quedó CONFIRMADA!");
+  else if(recent.status==="NO_DISPONIBLE")status("booking-status","El horario solicitado para el "+labelDate(fromKey(recent.date))+" a las "+recent.time+" ya no está disponible. Elige otro.");
+ }).catch(()=>{});
+}
 function saveBookingDraft(){
  try{localStorage.setItem(DRAFT_KEY,JSON.stringify({name:$("client-name").value,phone:$("client-phone").value,date:selectedDate,time:selectedTime}))}catch(error){}
 }
@@ -191,7 +202,8 @@ function restoreBookingDraft(){
 $("client-name").addEventListener("input",saveBookingDraft);
 $("client-phone").addEventListener("input",saveBookingDraft);
 window.addEventListener("pagehide",saveBookingDraft);
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveBookingDraft();else refreshCurrentDate()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveBookingDraft();else{refreshCurrentDate();refreshOfflineBookingStatus()}});
+window.addEventListener("online",refreshOfflineBookingStatus);
 window.addEventListener("focus",refreshCurrentDate);
 async function loadSlots(){
  if(!selectedDate)return;
@@ -796,6 +808,7 @@ function init(){
  cacheUpcomingSlots();
 }
 init();
+refreshOfflineBookingStatus();
 })();
 </script>
 <script>
