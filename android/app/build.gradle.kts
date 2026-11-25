@@ -42,7 +42,6 @@ tasks.named("preBuild").configure {
 
 dependencies {
     implementation("androidx.core:core:1.15.0")
-    implementation("com.google.android.gms:play-services-auth:22.0.0")
 }
 
 // The launcher bitmap is copied from the exact root logo asset before preBuild.
