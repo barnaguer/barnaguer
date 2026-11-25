@@ -36,8 +36,18 @@ tasks.register<Copy>("copyBarnaguerLauncherLogo") {
     rename { "barnaguer_logo.jpg" }
 }
 
+// Bundle the exact published web interface and its visual assets in the APK.
+// This makes the first screen available even after a fresh install without internet.
+tasks.register<Copy>("copyBarnaguerOfflineShell") {
+    from(rootProject.file("../index.html"))
+    from(rootProject.file("../manifest.json"))
+    from(rootProject.file("../barnaguer-logo.jpg"))
+    from(rootProject.file("../barnaguer-banner.png"))
+    into(layout.projectDirectory.dir("src/main/assets"))
+}
+
 tasks.named("preBuild").configure {
-    dependsOn("copyBarnaguerLauncherLogo")
+    dependsOn("copyBarnaguerLauncherLogo", "copyBarnaguerOfflineShell")
 }
 
 dependencies {
