@@ -12,6 +12,10 @@ on:
       - "*.jpeg"
       - "*.webp"
       - ".github/workflows/android-apk.yml"
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -73,6 +77,16 @@ jobs:
           name: barnaguer-android-release
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
+      - name: Publish BARNAGUER v1.3 release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v1.3 android/app/build/outputs/apk/release/app-release.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "BARNAGUER v1.3" \
+            --notes "Nueva versión de BARNAGUER. Incluye mejoras del modo offline, persistencia local de reservas pendientes y sincronización con Supabase al recuperar la conexión." \
+            --target "$GITHUB_SHA" \
+            --latest
       - name: Remove signing key
         if: always()
         run: rm -f android/release-key.p12
